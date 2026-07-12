@@ -127,6 +127,142 @@ export const KNOWLEDGE_BASE: HistoricalCase[] = [
       "process_safety",
     ],
   },
+  {
+    id: "CASE-006",
+    docType: "Batch Record",
+    productType: "某抗病毒原料药，多步合成，终产物结晶步骤（非氟化步骤）",
+    stage: "Pilot",
+    scale: "从10L放大至200L结晶釜",
+    scenario: "小试→中试放大时，终产物结晶步骤收率下降，晶型比例发生变化，母液夹带损失增加",
+    rootCause:
+      "放大后降温速率显著低于小试（换热面积/体积比下降），晶体生长动力学改变，导致晶型转化不完全、粒径变小、过滤母液夹带损失增加。与氟化步骤的化学副反应机理无关。",
+    resolution: "采用程序降温曲线并引入晶种控制，稳定目标晶型",
+    outcome: "收率恢复至86%，晶型稳定为目标晶型",
+    keyParameters: {
+      cooling_rate: "2°C/min（小试）→ 实际0.4°C/min（放大后）",
+      seeding: "未加晶种 → 程序降温 + 晶种控制",
+      yield: "88% → 79% → 86%（优化后）",
+    },
+    tags: [
+      "crystallization",
+      "cooling_rate",
+      "yield_drop",
+      "scale-up",
+      "particle_size",
+      "filtration_loss",
+    ],
+  },
+  {
+    id: "CASE-007",
+    docType: "Deviation Report",
+    productType: "某抗病毒原料药，多步合成，末端溶剂置换/减压蒸馏步骤",
+    stage: "Commercial",
+    scale: "从80L放大至800L蒸馏釜",
+    scenario:
+      "商业化放大后，减压蒸馏（溶剂置换）步骤耗时显著延长，成品中热降解杂质（Degradation Impurity，RRT 1.52）由小试的0.2%升至1.8%，超出放行标准（≤1.0%）",
+    rootCause:
+      "放大后釜体换热面积/物料体积比下降，相同真空度和温度设定下蒸馏耗时由小试2h延长至商业化规模的9h，中间体在受热条件下的暴露时间大幅增加，导致热降解副反应累积。与反应步骤本身无关，是单元操作（蒸馏）随规模放大的传热限制问题。",
+    resolution:
+      "真空度由-0.09MPa提高至-0.098MPa以降低操作温度，釜内增设外循环强制蒸发提高传热效率，蒸馏耗时压缩至4h；同时对该中间体补充热稳定性数据以设定暴露时间上限",
+    outcome: "热降解杂质降至0.4%，符合放行标准",
+    keyParameters: {
+      vacuum_level: "-0.09MPa → -0.098MPa",
+      distillation_time: "2h（小试）→ 9h（放大后优化前）→ 4h（优化后）",
+      operating_temp: "68°C → 实际72°C（优化后降至60°C）",
+    },
+    tags: [
+      "distillation",
+      "solvent_swap",
+      "thermal_degradation",
+      "scale-up",
+      "heat_transfer_ratio",
+      "commercial_scale",
+      "exposure_time",
+    ],
+  },
+  {
+    id: "CASE-008",
+    docType: "CAPA",
+    productType: "某抗病毒原料药，多步合成，含催化加氢还原步骤",
+    stage: "Pilot",
+    scale: "从20L放大至300L加氢釜",
+    scenario:
+      "中试放大后加氢反应转化率不稳定，部分批次残留未反应双键中间体超标，同批次催化剂用量与小试一致但效果下降",
+    rootCause:
+      "追溯发现放大批次所用起始原料中微量含硫化合物（供应商变更后引入）导致钯碳催化剂中毒失活，而非搅拌或传质问题——小试所用起始原料杂质谱与放大批次不同，掩盖了根因排查方向",
+    resolution:
+      "增加起始原料入厂硫含量检测（ICP-MS，限度≤10ppm），催化剂更换为对硫更耐受的铂系催化剂并提高催化剂负载量作为过渡方案，供应商变更后追加3批确认批",
+    outcome: "转化率恢复至99%以上，未反应中间体降至<0.1%",
+    keyParameters: {
+      sulfur_content: "未检测 → 控制至≤10ppm",
+      catalyst_type: "Pd/C 5% → Pt/C 3%（过渡方案）",
+      catalyst_loading: "1.2 wt% → 1.8 wt%（过渡方案）",
+    },
+    tags: [
+      "hydrogenation",
+      "catalyst_poisoning",
+      "raw_material_variability",
+      "supplier_change",
+      "scale-up",
+      "conversion_drop",
+    ],
+  },
+  {
+    id: "CASE-009",
+    docType: "Deviation Report",
+    productType: "某心血管类原料药（非抗病毒），多步合成，含酰氯化步骤（SOCl2体系）",
+    stage: "Pilot",
+    scale: "从15L放大至250L反应釜",
+    scenario:
+      "中试放大后酰氯化反应（SOCl2投料）出现瞬时尾气量激增，HCl/SO2尾气吸收系统短时超负荷报警，同时过氯化副产物增加",
+    rootCause:
+      "SOCl2投料速率按小试等比例放大后，实际气体释放速率超过尾气吸收塔设计处理能力（吸收塔未按反应放气速率同步放大校核），且局部投料点SOCl2瞬时过量导致过氯化副反应",
+    resolution:
+      "SOCl2改为计量泵控制的分段慢加（由整体加入改为4段，总加料时间由30min延长至2h），并对尾气吸收系统处理能力做重新校核和预警联锁改造",
+    outcome: "尾气吸收系统未再超负荷，过氯化杂质降至0.3%以下，收率维持91%",
+    keyParameters: {
+      addition_mode: "整体加入 → 4段计量泵慢加",
+      addition_time: "30min → 2h",
+      off_gas_handling: "吸收塔处理能力校核并改造",
+    },
+    tags: [
+      "chlorination",
+      "off_gas_handling",
+      "process_safety",
+      "scale-up",
+      "over_chlorination",
+      "different_drug_class",
+      "corrosive_reagent",
+    ],
+  },
+  {
+    id: "CASE-010",
+    docType: "Deviation Report",
+    productType:
+      "某抗病毒原料药，多步合成，紧接氟化步骤之后的溶剂共沸脱水/蒸馏步骤",
+    stage: "Pilot",
+    scale: "从15L放大至180L蒸馏釜",
+    scenario:
+      "中试放大后，氟化反应完成后的共沸脱水（蒸馏）步骤中，HPLC在与二聚体杂质（Dimer Impurity）相近的保留时间处检出一个新增峰，初筛时曾被误判为二聚体杂质增加，直至LC-MS确证后发现实为热降解产物，而非氟化步骤的自缩合二聚体",
+    rootCause:
+      "该峰实为蒸馏过程中温度/真空度设定下的热降解产物，根因是蒸馏单元操作的传热限制（与CASE-007机理一致），而非氟化反应本身的副反应（与CASE-001机理不同）。两者色谱行为相近导致初期误判，凸显仅凭杂质名称/保留时间做检索匹配的局限性。",
+    resolution:
+      "补充LC-MS定性以区分二聚体杂质与热降解产物；蒸馏步骤真空度提高、缩短受热时间（做法与CASE-007一致）；氟化步骤本身参数未做任何调整（因根因不在此步骤）",
+    outcome: "确认为热降解产物后，通过蒸馏工艺优化控制在报告限以下，氟化步骤收率不受影响",
+    keyParameters: {
+      hplc_rrt: "与二聚体杂质RRT相近（约1.33 vs 1.34），LC-MS确证为不同物质",
+      vacuum_level: "-0.088MPa → -0.096MPa",
+      distillation_time: "缩短约40%",
+    },
+    tags: [
+      "distillation",
+      "thermal_degradation",
+      "impurity_dimer",
+      "scale-up",
+      "solvent_swap",
+      "exposure_time",
+    ],
+  },
 ];
 
 // --- Simple, deterministic keyword/tag retrieval (no embeddings needed) ---
@@ -147,6 +283,13 @@ const KEYWORD_TAG_MAP: { pattern: RegExp; tag: string }[] = [
   { pattern: /supplier|供应商|raw material|原料/i, tag: "raw_material_variability" },
   { pattern: /oos|超标/i, tag: "OOS" },
   { pattern: /scale.?up|放大/i, tag: "scale-up" },
+  { pattern: /distillat|蒸馏|精馏/i, tag: "distillation" },
+  { pattern: /degrad|降解/i, tag: "thermal_degradation" },
+  { pattern: /hydrogenat|加氢/i, tag: "hydrogenation" },
+  { pattern: /catalyst|催化剂|中毒/i, tag: "catalyst_poisoning" },
+  { pattern: /chlorinat|氯化/i, tag: "chlorination" },
+  { pattern: /off.?gas|尾气|放气/i, tag: "off_gas_handling" },
+  { pattern: /crystalliz|结晶/i, tag: "crystallization" },
 ];
 
 function extractTagsFromText(...texts: string[]): string[] {
