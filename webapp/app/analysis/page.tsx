@@ -54,7 +54,7 @@ export default function AnalysisPage() {
       {loading && (
         <div className="rounded-lg border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
           <div className="mx-auto mb-3 h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-slate-900" />
-          正在调用 Claude 分析 {retrievedCases.length} 条历史案例…（Reasoning in progress）
+          正在调用 GPT-4o mini 分析 {retrievedCases.length} 条历史案例…（Reasoning in progress）
         </div>
       )}
 

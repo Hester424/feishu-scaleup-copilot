@@ -1,118 +1,121 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import { AnalysisResult, InvestigationInput, RetrievedCase } from "@/lib/types";
 import { buildFallbackAnalysis } from "@/lib/fallbackAnalysis";
 
 export const runtime = "nodejs";
 
 const ANALYSIS_TOOL = {
-  name: "submit_analysis",
-  description:
-    "Submit the structured scale-up investigation analysis derived strictly from the provided historical cases.",
-  input_schema: {
-    type: "object" as const,
-    properties: {
-      summary: {
-        type: "string",
-        description: "2-3 sentence executive summary of the analysis.",
-      },
-      attributions: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            caseId: { type: "string" },
-            attribution: {
-              type: "string",
-              description:
-                "Success/failure attribution for this historical case relevant to the current scenario.",
+  type: "function" as const,
+  function: {
+    name: "submit_analysis",
+    description:
+      "Submit the structured scale-up investigation analysis derived strictly from the provided historical cases.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        summary: {
+          type: "string",
+          description: "2-3 sentence executive summary of the analysis.",
+        },
+        attributions: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              caseId: { type: "string" },
+              attribution: {
+                type: "string",
+                description:
+                  "Success/failure attribution for this historical case relevant to the current scenario.",
+              },
             },
+            required: ["caseId", "attribution"],
           },
-          required: ["caseId", "attribution"],
         },
-      },
-      keyDifferences: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            aspect: { type: "string" },
-            current: { type: "string" },
-            historical: { type: "string" },
-            note: { type: "string" },
-          },
-          required: ["aspect", "current", "historical", "note"],
-        },
-      },
-      transferableLessons: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            lesson: { type: "string" },
-            applicable: { type: "boolean" },
-            reason: { type: "string" },
-            sourceCaseId: { type: "string" },
-          },
-          required: ["lesson", "applicable", "reason", "sourceCaseId"],
-        },
-      },
-      risks: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            risk: { type: "string" },
-            likelihood: { type: "string", enum: ["High", "Medium", "Low"] },
-            impact: { type: "string", enum: ["High", "Medium", "Low"] },
-            rationale: { type: "string" },
-            sourceCaseId: { type: "string" },
-          },
-          required: ["risk", "likelihood", "impact", "rationale"],
-        },
-      },
-      scenarioAnalysis: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            sourceCaseId: { type: "string" },
-            historicalCondition: { type: "string" },
-            historicalOutcome: { type: "string" },
-            note: {
-              type: "string",
-              description:
-                "Must explicitly frame this as a historical analogy, not a prediction.",
+        keyDifferences: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              aspect: { type: "string" },
+              current: { type: "string" },
+              historical: { type: "string" },
+              note: { type: "string" },
             },
+            required: ["aspect", "current", "historical", "note"],
           },
-          required: [
-            "sourceCaseId",
-            "historicalCondition",
-            "historicalOutcome",
-            "note",
-          ],
+        },
+        transferableLessons: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              lesson: { type: "string" },
+              applicable: { type: "boolean" },
+              reason: { type: "string" },
+              sourceCaseId: { type: "string" },
+            },
+            required: ["lesson", "applicable", "reason", "sourceCaseId"],
+          },
+        },
+        risks: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              risk: { type: "string" },
+              likelihood: { type: "string", enum: ["High", "Medium", "Low"] },
+              impact: { type: "string", enum: ["High", "Medium", "Low"] },
+              rationale: { type: "string" },
+              sourceCaseId: { type: "string" },
+            },
+            required: ["risk", "likelihood", "impact", "rationale"],
+          },
+        },
+        scenarioAnalysis: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              sourceCaseId: { type: "string" },
+              historicalCondition: { type: "string" },
+              historicalOutcome: { type: "string" },
+              note: {
+                type: "string",
+                description:
+                  "Must explicitly frame this as a historical analogy, not a prediction.",
+              },
+            },
+            required: [
+              "sourceCaseId",
+              "historicalCondition",
+              "historicalOutcome",
+              "note",
+            ],
+          },
+        },
+        confidence: { type: "string", enum: ["high", "medium", "low"] },
+        confidenceReason: { type: "string" },
+        blindSpots: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Aspects of the current scenario not covered by the retrieved cases.",
         },
       },
-      confidence: { type: "string", enum: ["high", "medium", "low"] },
-      confidenceReason: { type: "string" },
-      blindSpots: {
-        type: "array",
-        items: { type: "string" },
-        description:
-          "Aspects of the current scenario not covered by the retrieved cases.",
-      },
+      required: [
+        "summary",
+        "attributions",
+        "keyDifferences",
+        "transferableLessons",
+        "risks",
+        "scenarioAnalysis",
+        "confidence",
+        "confidenceReason",
+        "blindSpots",
+      ],
     },
-    required: [
-      "summary",
-      "attributions",
-      "keyDifferences",
-      "transferableLessons",
-      "risks",
-      "scenarioAnalysis",
-      "confidence",
-      "confidenceReason",
-      "blindSpots",
-    ],
   },
 };
 
@@ -158,9 +161,18 @@ Call the submit_analysis tool with your structured findings. Reference case IDs 
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const input: InvestigationInput = body.input;
-  const cases: RetrievedCase[] = body.cases;
+  let input: InvestigationInput;
+  let cases: RetrievedCase[];
+  try {
+    const body = await req.json();
+    input = body.input;
+    cases = body.cases;
+  } catch {
+    return NextResponse.json(
+      { error: "Malformed request body." },
+      { status: 400 }
+    );
+  }
 
   if (!input || !cases || cases.length === 0) {
     return NextResponse.json(
@@ -169,36 +181,35 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     const analysis: AnalysisResult = {
       ...buildFallbackAnalysis(input, cases),
       usedFallback: true,
       fallbackReason:
-        "ANTHROPIC_API_KEY 未配置。请在 webapp/.env.local 中设置后重启开发服务器以启用真实 LLM 分析。",
+        "OPENAI_API_KEY 未配置。请在 webapp/.env.local 中设置后重启开发服务器以启用真实 LLM 分析。",
     };
     return NextResponse.json({ analysis });
   }
 
-  const client = new Anthropic({ apiKey });
-  const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
-
   try {
-    const message = await client.messages.create({
+    const client = new OpenAI({ apiKey });
+    const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+
+    const completion = await client.chat.completions.create({
       model,
-      max_tokens: 4096,
-      tools: [ANALYSIS_TOOL],
-      tool_choice: { type: "tool", name: "submit_analysis" },
       messages: [{ role: "user", content: buildPrompt(input, cases) }],
+      tools: [ANALYSIS_TOOL],
+      tool_choice: { type: "function", function: { name: "submit_analysis" } },
     });
 
-    const toolUse = message.content.find((b) => b.type === "tool_use");
-    if (!toolUse || toolUse.type !== "tool_use") {
+    const toolCall = completion.choices[0]?.message?.tool_calls?.[0];
+    if (!toolCall || toolCall.type !== "function") {
       throw new Error("Model did not return a structured analysis.");
     }
 
     const analysis: AnalysisResult = {
-      ...(toolUse.input as AnalysisResult),
+      ...(JSON.parse(toolCall.function.arguments) as AnalysisResult),
       usedFallback: false,
     };
     return NextResponse.json({ analysis });
@@ -207,7 +218,7 @@ export async function POST(req: NextRequest) {
     const analysis: AnalysisResult = {
       ...buildFallbackAnalysis(input, cases),
       usedFallback: true,
-      fallbackReason: `调用 Claude API 失败（${message}），已自动切换为预设静态分析。`,
+      fallbackReason: `调用 OpenAI API 失败（${message}），已自动切换为预设静态分析。`,
     };
     return NextResponse.json({ analysis });
   }

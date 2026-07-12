@@ -5,7 +5,7 @@ import {
   RetrievedCase,
 } from "./types";
 
-// Deterministic, rule-based analysis used when ANTHROPIC_API_KEY is not
+// Deterministic, rule-based analysis used when OPENAI_API_KEY is not
 // configured (or the live API call fails), so the demo flow can still reach
 // Page 4/5. This is template-generated from the retrieved cases only — it is
 // explicitly NOT an LLM output, and callers must surface `usedFallback`.
@@ -95,13 +95,13 @@ export function buildFallbackAnalysis(
   const blindSpots = [
     "设备/搅拌桨具体几何差异对传质效率的量化影响，历史案例未覆盖，建议现场核实。",
     "原料批次（如氟化试剂供应商、水分含量）差异未纳入本次检索范围，如有变更建议单独排查。",
-    "当前为预设静态分析（未调用 Claude API），结论覆盖面有限，建议配置 API Key 获取完整 LLM 推理分析。",
+    "当前为预设静态分析（未调用 OpenAI API），结论覆盖面有限，建议配置 API Key 获取完整 LLM 推理分析。",
   ];
 
   return {
-    summary: `⚠ 当前展示为基于检索案例生成的预设静态分析示例（未配置 Claude API Key，非实时 LLM 推理）。系统基于相关性最高的 ${top.length} 条历史案例（${top
+    summary: `⚠ 当前展示为基于检索案例生成的预设静态分析示例（未配置 OpenAI API Key，非实时 LLM 推理）。系统基于相关性最高的 ${top.length} 条历史案例（${top
       .map((c) => c.id)
-      .join(", ")}）进行了规则化归纳，可用于走通 Page 4/5 演示流程；如需真实推理分析，请在 webapp/.env.local 中配置 ANTHROPIC_API_KEY 后重试。`,
+      .join(", ")}）进行了规则化归纳，可用于走通 Page 4/5 演示流程；如需真实推理分析，请在 webapp/.env.local 中配置 OPENAI_API_KEY 后重试。`,
     attributions,
     keyDifferences,
     transferableLessons,
@@ -111,6 +111,6 @@ export function buildFallbackAnalysis(
     confidenceReason,
     blindSpots,
     usedFallback: true,
-    fallbackReason: "ANTHROPIC_API_KEY 未配置，或调用 Claude API 失败，已自动切换为预设静态分析。",
+    fallbackReason: "OPENAI_API_KEY 未配置，或调用 OpenAI API 失败，已自动切换为预设静态分析。",
   };
 }
