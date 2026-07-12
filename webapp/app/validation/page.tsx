@@ -1,0 +1,184 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { PageShell } from "@/components/PageShell";
+import { useInvestigation } from "@/lib/investigationContext";
+import { ValidationDecision } from "@/lib/types";
+
+const DECISIONS: { value: ValidationDecision; label: string; desc: string }[] = [
+  { value: "confirmed", label: "确认（Confirm）", desc: "分析结论与工程判断一致，可采纳" },
+  { value: "revised", label: "修正（Revise）", desc: "部分结论需要修改后才能采纳" },
+  { value: "supplemented", label: "补充（Supplement）", desc: "结论基本正确，但需补充遗漏信息" },
+];
+
+const LOOP_STEPS = [
+  "文档（Document）",
+  "Copilot",
+  "专家（Expert）",
+  "知识库（Knowledge Base）",
+  "下一项目（Next Project）",
+];
+
+export default function ValidationPage() {
+  const router = useRouter();
+  const { input, analysis, validation, setValidation } = useInvestigation();
+  const [decision, setDecision] = useState<ValidationDecision>("confirmed");
+  const [comment, setComment] = useState("");
+  const [name, setName] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (!input) router.replace("/investigation");
+    else if (!analysis) router.replace("/analysis");
+  }, [input, analysis, router]);
+
+  if (!input || !analysis) return null;
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const v = {
+      decision,
+      comment,
+      validatedBy: name || "Process Engineer",
+      validatedAt: new Date().toISOString(),
+    };
+    setValidation(v);
+    setSubmitted(true);
+  }
+
+  return (
+    <PageShell
+      eyebrow="第 5 步 / 共 5 步"
+      title="专家确认与知识沉淀（Expert Validation & Knowledge Update）"
+      description="人在回路（Human-in-the-loop）：工程师始终对最终技术决策负责。确认后的结论回写知识库，供后续项目复用。"
+    >
+      {!submitted && !validation ? (
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-lg border border-slate-200 bg-white p-6"
+        >
+          <h2 className="text-sm font-semibold text-slate-900">审阅AI生成的调查分析</h2>
+          <p className="mt-1 text-sm text-slate-500">{analysis.summary}</p>
+
+          <div className="mt-5">
+            <p className="mb-2 text-xs font-medium text-slate-600">工程师判断</p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {DECISIONS.map((d) => (
+                <label
+                  key={d.value}
+                  className={`cursor-pointer rounded-md border p-3 text-sm transition-colors ${
+                    decision === d.value
+                      ? "border-slate-900 bg-slate-50"
+                      : "border-slate-200 hover:border-slate-300"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="decision"
+                    value={d.value}
+                    checked={decision === d.value}
+                    onChange={() => setDecision(d.value)}
+                    className="sr-only"
+                  />
+                  <span className="font-medium text-slate-800">{d.label}</span>
+                  <p className="mt-1 text-xs text-slate-500">{d.desc}</p>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-slate-600">审阅工程师</span>
+              <input
+                className="rounded-md border border-slate-200 px-3 py-2 text-sm"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="姓名 / 工号"
+              />
+            </label>
+          </div>
+
+          <label className="mt-4 flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-slate-600">
+              修正 / 补充说明（可选）
+            </span>
+            <textarea
+              className="min-h-24 resize-y rounded-md border border-slate-200 px-3 py-2 text-sm"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="如：Step 3放大还需考虑搅拌功率密度变化……"
+            />
+          </label>
+
+          <button
+            type="submit"
+            className="mt-5 rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-700"
+          >
+            确认并更新知识库（Confirm & Update Knowledge Base）
+          </button>
+        </form>
+      ) : (
+        <div className="space-y-5">
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-5">
+            <p className="text-sm font-semibold text-emerald-800">
+              ✓ 已标记为「已验证」，结论已回写知识库
+            </p>
+            <p className="mt-1 text-sm text-emerald-700">
+              审阅结果：{DECISIONS.find((d) => d.value === (validation?.decision ?? decision))?.label}
+              {" · "}
+              审阅人：{validation?.validatedBy || name || "Process Engineer"}
+            </p>
+            {(validation?.comment || comment) && (
+              <p className="mt-2 text-sm text-emerald-700">
+                补充说明：{validation?.comment || comment}
+              </p>
+            )}
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-5">
+            <h3 className="text-sm font-semibold text-slate-900">新知识条目（模拟回写）</h3>
+            <div className="mt-3 rounded-md border border-dashed border-slate-300 p-4 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs text-slate-400">CASE-NEW</span>
+                <span className="rounded-full border border-blue-300 bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+                  调查报告（已验证 / Validated）
+                </span>
+              </div>
+              <p className="mt-2 text-slate-700">{input.product} — {input.problemDescription}</p>
+              <p className="mt-1 text-xs text-slate-500">
+                结论已由 {validation?.validatedBy || name || "Process Engineer"} 于{" "}
+                {new Date(validation?.validatedAt ?? Date.now()).toLocaleString()} 确认，供后续项目检索复用。
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-5">
+            <h3 className="mb-3 text-sm font-semibold text-slate-900">知识飞轮闭环</h3>
+            <div className="flex flex-wrap items-center gap-2">
+              {LOOP_STEPS.map((s, i) => (
+                <div key={s} className="flex items-center gap-2">
+                  <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white">
+                    {s}
+                  </span>
+                  {i < LOOP_STEPS.length - 1 && <span className="text-slate-300">→</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <Link
+              href="/"
+              className="rounded-md border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              返回首页
+            </Link>
+          </div>
+        </div>
+      )}
+    </PageShell>
+  );
+}
