@@ -14,6 +14,11 @@ export interface InvestigationInput {
   equipment: string;
   targetYield: string;
   problemDescription: string;
+  /** Optional structured step-type tags selected via chips on Page 1,
+   * e.g. ["fluorination"]. These are unioned with the free-text keyword
+   * extraction so retrieval doesn't depend entirely on regex-matching
+   * whatever wording the user happens to type. */
+  suspectedStepTags?: string[];
 }
 
 export interface HistoricalCase {

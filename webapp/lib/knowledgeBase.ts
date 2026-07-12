@@ -311,14 +311,31 @@ function scaleJumpBucket(scale: string): string | null {
   return "large";
 }
 
+// Chip options shown on Page 1 — kept here (not hardcoded in the UI) so the
+// selectable step types always match the tag vocabulary the scorer actually
+// understands.
+export const STEP_TYPE_OPTIONS: { label: string; tag: string }[] = [
+  { label: "氟化 Fluorination", tag: "fluorination" },
+  { label: "蒸馏/溶剂置换 Distillation", tag: "distillation" },
+  { label: "加氢 Hydrogenation", tag: "hydrogenation" },
+  { label: "结晶 Crystallization", tag: "crystallization" },
+  { label: "氯化 Chlorination", tag: "chlorination" },
+  { label: "酰胺化 Amidation", tag: "amidation" },
+];
+
 export function retrieveRelevantCases(
   input: InvestigationInput,
   topN = 5
 ): RetrievedCase[] {
-  const queryTags = extractTagsFromText(
-    input.synthesisRoute,
-    input.problemDescription,
-    input.equipment
+  const queryTags = Array.from(
+    new Set([
+      ...extractTagsFromText(
+        input.synthesisRoute,
+        input.problemDescription,
+        input.equipment
+      ),
+      ...(input.suspectedStepTags ?? []),
+    ])
   );
   const queryBucket = scaleJumpBucket(input.scale);
 
