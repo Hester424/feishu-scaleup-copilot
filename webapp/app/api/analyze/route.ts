@@ -16,7 +16,8 @@ const ANALYSIS_TOOL = {
       properties: {
         summary: {
           type: "string",
-          description: "2-3 sentence executive summary of the analysis.",
+          description:
+            "2-3 sentence executive summary of the analysis, in Chinese (Simplified), with English technical terms annotated in parentheses on first use, e.g. 收率下降（Yield Drop）.",
         },
         attributions: {
           type: "array",
@@ -27,7 +28,7 @@ const ANALYSIS_TOOL = {
               attribution: {
                 type: "string",
                 description:
-                  "Success/failure attribution for this historical case relevant to the current scenario.",
+                  "Success/failure attribution for this historical case relevant to the current scenario, in Chinese (Simplified).",
               },
             },
             required: ["caseId", "attribution"],
@@ -38,10 +39,10 @@ const ANALYSIS_TOOL = {
           items: {
             type: "object",
             properties: {
-              aspect: { type: "string" },
-              current: { type: "string" },
-              historical: { type: "string" },
-              note: { type: "string" },
+              aspect: { type: "string", description: "In Chinese (Simplified)." },
+              current: { type: "string", description: "In Chinese (Simplified)." },
+              historical: { type: "string", description: "In Chinese (Simplified)." },
+              note: { type: "string", description: "In Chinese (Simplified)." },
             },
             required: ["aspect", "current", "historical", "note"],
           },
@@ -51,9 +52,9 @@ const ANALYSIS_TOOL = {
           items: {
             type: "object",
             properties: {
-              lesson: { type: "string" },
+              lesson: { type: "string", description: "In Chinese (Simplified)." },
               applicable: { type: "boolean" },
-              reason: { type: "string" },
+              reason: { type: "string", description: "In Chinese (Simplified)." },
               sourceCaseId: { type: "string" },
             },
             required: ["lesson", "applicable", "reason", "sourceCaseId"],
@@ -64,10 +65,18 @@ const ANALYSIS_TOOL = {
           items: {
             type: "object",
             properties: {
-              risk: { type: "string" },
-              likelihood: { type: "string", enum: ["High", "Medium", "Low"] },
-              impact: { type: "string", enum: ["High", "Medium", "Low"] },
-              rationale: { type: "string" },
+              risk: { type: "string", description: "In Chinese (Simplified)." },
+              likelihood: {
+                type: "string",
+                enum: ["High", "Medium", "Low"],
+                description: "Keep exactly as this English enum value, do not translate.",
+              },
+              impact: {
+                type: "string",
+                enum: ["High", "Medium", "Low"],
+                description: "Keep exactly as this English enum value, do not translate.",
+              },
+              rationale: { type: "string", description: "In Chinese (Simplified)." },
               sourceCaseId: { type: "string" },
             },
             required: ["risk", "likelihood", "impact", "rationale"],
@@ -79,12 +88,12 @@ const ANALYSIS_TOOL = {
             type: "object",
             properties: {
               sourceCaseId: { type: "string" },
-              historicalCondition: { type: "string" },
-              historicalOutcome: { type: "string" },
+              historicalCondition: { type: "string", description: "In Chinese (Simplified)." },
+              historicalOutcome: { type: "string", description: "In Chinese (Simplified)." },
               note: {
                 type: "string",
                 description:
-                  "Must explicitly frame this as a historical analogy, not a prediction.",
+                  "Must explicitly frame this as a historical analogy, not a prediction. In Chinese (Simplified).",
               },
             },
             required: [
@@ -95,13 +104,17 @@ const ANALYSIS_TOOL = {
             ],
           },
         },
-        confidence: { type: "string", enum: ["high", "medium", "low"] },
-        confidenceReason: { type: "string" },
+        confidence: {
+          type: "string",
+          enum: ["high", "medium", "low"],
+          description: "Keep exactly as this English enum value, do not translate.",
+        },
+        confidenceReason: { type: "string", description: "In Chinese (Simplified)." },
         blindSpots: {
           type: "array",
           items: { type: "string" },
           description:
-            "Aspects of the current scenario not covered by the retrieved cases.",
+            "Aspects of the current scenario not covered by the retrieved cases, in Chinese (Simplified).",
         },
       },
       required: [
@@ -121,6 +134,8 @@ const ANALYSIS_TOOL = {
 
 function buildPrompt(input: InvestigationInput, cases: RetrievedCase[]) {
   return `You are an evidence-based process scale-up investigation copilot for a pharmaceutical process engineer. You NEVER predict exact process parameters and you NEVER claim physical/chemical simulation. You reason ONLY from the historical cases provided below plus the current scenario. Every claim must be traceable to a specific case ID or explicitly marked as a gap.
+
+LANGUAGE REQUIREMENT (critical): Write ALL free-text/narrative fields in Chinese (Simplified) — summary, attributions[].attribution, keyDifferences[].aspect/current/historical/note, transferableLessons[].lesson/reason, risks[].risk/rationale, scenarioAnalysis[].historicalCondition/historicalOutcome/note, confidenceReason, and blindSpots. When a technical/professional term first appears in a field, write it in Chinese with the English term in parentheses, e.g. "收率下降（Yield Drop）", "偏差报告（Deviation Report）", "氟化步骤（Fluorination Step）". Do NOT write entire fields in English. The ONLY fields that must stay exactly as the enum values defined in the schema (do not translate these) are: confidence ("high"/"medium"/"low"), risks[].likelihood and risks[].impact ("High"/"Medium"/"Low"). caseId and sourceCaseId values must stay as the literal case IDs (e.g. "CASE-001").
 
 Your job, mirroring how a senior process engineer reasons:
 1. Attribute success/failure of each historical case relevant to this scenario.
@@ -157,7 +172,7 @@ ${cases
   )
   .join("\n")}
 
-Call the submit_analysis tool with your structured findings. Reference case IDs (e.g. "CASE-001") wherever you draw on a specific case.`;
+Call the submit_analysis tool with your structured findings. Reference case IDs (e.g. "CASE-001") wherever you draw on a specific case. Remember: all narrative text fields must be written in Chinese (Simplified), with English technical terms annotated in parentheses on first use.`;
 }
 
 export async function POST(req: NextRequest) {
