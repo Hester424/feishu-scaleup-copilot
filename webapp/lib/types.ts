@@ -47,6 +47,9 @@ export interface KeyDifference {
   aspect: string;
   current: string;
   historical: string;
+  /** true = condition matches / transfers cleanly; false = mismatch, transfer with caution. */
+  matched: boolean;
+  sourceCaseId: string;
   note: string;
 }
 
@@ -55,6 +58,12 @@ export interface TransferableLesson {
   applicable: boolean;
   reason: string;
   sourceCaseId: string;
+}
+
+export interface RecommendedAction {
+  action: string;
+  rationale: string;
+  relatedCaseIds: string[];
 }
 
 export interface RiskItem {
@@ -74,6 +83,9 @@ export interface ScenarioAnalysisItem {
 
 export interface CaseAttribution {
   caseId: string;
+  /** Why this specific case surfaced as relevant to the current scenario. */
+  whyRelevant: string;
+  /** Success/failure attribution for the historical case itself. */
   attribution: string;
 }
 
@@ -81,6 +93,7 @@ export interface AnalysisResult {
   attributions: CaseAttribution[];
   keyDifferences: KeyDifference[];
   transferableLessons: TransferableLesson[];
+  recommendedActions: RecommendedAction[];
   risks: RiskItem[];
   scenarioAnalysis: ScenarioAnalysisItem[];
   confidence: ConfidenceLevel;
@@ -89,6 +102,7 @@ export interface AnalysisResult {
   summary: string;
   usedFallback?: boolean;
   fallbackReason?: string;
+  servedFromCache?: boolean;
 }
 
 export type ValidationDecision = "confirmed" | "revised" | "supplemented";

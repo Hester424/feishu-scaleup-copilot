@@ -29,18 +29,32 @@ function buildMarkdownReport(
   lines.push(`## Summary`);
   lines.push(analysis.summary);
   lines.push("");
-  lines.push(`## Case Attribution`);
-  analysis.attributions.forEach((a) => lines.push(`- [${a.caseId}] ${a.attribution}`));
+  lines.push(`## 1. Why Relevant & Attribution`);
+  analysis.attributions.forEach((a) => {
+    lines.push(`- [${a.caseId}] Why relevant: ${a.whyRelevant}`);
+    lines.push(`  Attribution: ${a.attribution}`);
+  });
   lines.push("");
-  lines.push(`## Key Differences`);
+  lines.push(`## 2. Key Differences (Matched / Mismatched)`);
   analysis.keyDifferences.forEach((d) =>
-    lines.push(`- **${d.aspect}** — current: ${d.current}; historical: ${d.historical}. ${d.note}`)
+    lines.push(
+      `- [${d.sourceCaseId}] ${d.matched ? "✓ Matched" : "✗ Mismatched"} — **${d.aspect}** — current: ${d.current}; historical: ${d.historical}. ${d.note}`
+    )
   );
   lines.push("");
-  lines.push(`## Transferable Lessons`);
+  lines.push(`## 3. Transferable Lessons`);
   analysis.transferableLessons.forEach((l) =>
     lines.push(
       `- [${l.sourceCaseId}] (${l.applicable ? "Applicable" : "Not applicable"}) ${l.lesson} — ${l.reason}`
+    )
+  );
+  lines.push("");
+  lines.push(`## 4. Recommended Investigation Directions`);
+  analysis.recommendedActions.forEach((r) =>
+    lines.push(
+      `- ${r.action} — ${r.rationale}${
+        r.relatedCaseIds.length ? ` [${r.relatedCaseIds.join(", ")}]` : ""
+      }`
     )
   );
   lines.push("");
@@ -136,25 +150,33 @@ export default function ReportPage() {
 
         <p className="text-sm text-slate-700">{analysis.summary}</p>
 
-        <ReportSection title="历史案例归因（Attribution）">
+        <ReportSection title="① 案例相关性与归因（Why Relevant & Attribution）">
           {analysis.attributions.map((a, i) => (
             <Cited key={i} caseId={a.caseId} caseById={caseById}>
+              <span className="font-medium">为什么相关：</span>
+              {a.whyRelevant}
+              <br />
+              <span className="font-medium">历史归因：</span>
               {a.attribution}
             </Cited>
           ))}
         </ReportSection>
 
-        <ReportSection title="关键差异（Key Differences）">
+        <ReportSection title="② 关键条件对比（Key Differences，匹配 ✓ / 不匹配 ✗）">
           {analysis.keyDifferences.map((d, i) => (
             <p key={i} className="text-sm text-slate-700">
+              <span className={d.matched ? "text-emerald-600" : "text-red-500"}>
+                {d.matched ? "✓" : "✗"}
+              </span>{" "}
               <span className="font-medium">{d.aspect}：</span>
               当前 {d.current} vs 历史 {d.historical}。
-              <span className="text-slate-500"> {d.note}</span>
+              <span className="text-slate-500"> {d.note}</span>{" "}
+              <span className="font-mono text-xs text-slate-400">[{d.sourceCaseId}]</span>
             </p>
           ))}
         </ReportSection>
 
-        <ReportSection title="可迁移经验 / 不适用经验（Transferable Lessons）">
+        <ReportSection title="③ 可迁移经验 / 不适用经验（Transferable Lessons）">
           {analysis.transferableLessons.map((l, i) => (
             <Cited key={i} caseId={l.sourceCaseId} caseById={caseById}>
               <span
@@ -168,6 +190,23 @@ export default function ReportPage() {
               </span>
               {l.lesson} — {l.reason}
             </Cited>
+          ))}
+        </ReportSection>
+
+        <ReportSection title="④ 推荐的调查方向（Recommended Investigation Directions）">
+          {analysis.recommendedActions.map((r, i) => (
+            <p key={i} className="text-sm text-slate-700">
+              <span className="mr-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-medium text-white">
+                {i + 1}
+              </span>
+              {r.action}
+              <span className="text-slate-500"> — {r.rationale}</span>
+              {r.relatedCaseIds.map((id) => (
+                <sup key={id} className="ml-1 text-emerald-700">
+                  [{id}]
+                </sup>
+              ))}
+            </p>
           ))}
         </ReportSection>
 

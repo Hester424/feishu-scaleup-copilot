@@ -21,6 +21,25 @@ const LOOP_STEPS = [
   "下一项目（Next Project）",
 ];
 
+const ROADMAP_ITEMS = [
+  {
+    name: "工艺参数预测（Parameter Prediction）",
+    desc: "基于历史数据给出具体工艺参数（如温度、投料速率）的推荐区间，而非仅提供历史案例参考。",
+  },
+  {
+    name: "工艺优化建议（Process Optimization）",
+    desc: "结合历史案例与实时生产数据，主动给出工艺条件的优化调整建议。",
+  },
+  {
+    name: "实时监控数据接入（Real-time Monitoring Integration）",
+    desc: "接入中控系统（DCS/SCADA）实时数据，动态更新调查分析与风险提示。",
+  },
+  {
+    name: "跨基地知识联邦（Cross-plant Knowledge Federation）",
+    desc: "跨厂区、跨品种知识库联合检索，扩大证据覆盖面，加速新品种的经验复用。",
+  },
+];
+
 export default function ValidationPage() {
   const router = useRouter();
   const { input, analysis, validation, setValidation } = useInvestigation();
@@ -179,6 +198,36 @@ export default function ValidationPage() {
           </div>
         </div>
       )}
+
+      <div className="mt-8 rounded-lg border border-dashed border-slate-300 bg-slate-50/60 p-5">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-slate-900">
+            产品演进路径（Roadmap）
+          </h3>
+          <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
+            当前版本聚焦：证据检索与推理分析
+          </span>
+        </div>
+        <p className="mt-1 text-xs text-slate-500">
+          以下能力为规划中方向，本demo暂未实现——展示Copilot从&ldquo;证据推理&rdquo;向&ldquo;主动建议&rdquo;演进的产品路径。
+        </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {ROADMAP_ITEMS.map((item) => (
+            <div
+              key={item.name}
+              className="rounded-md border border-dashed border-slate-300 bg-white p-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-medium text-slate-700">{item.name}</p>
+                <span className="shrink-0 rounded border border-slate-300 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+                  Coming Soon
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-slate-500">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </PageShell>
   );
 }

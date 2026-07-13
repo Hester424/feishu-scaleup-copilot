@@ -9,6 +9,9 @@ import {
 // configured (or the live API call fails), so the demo flow can still reach
 // Page 4/5. This is template-generated from the retrieved cases only — it is
 // explicitly NOT an LLM output, and callers must surface `usedFallback`.
+// It mirrors the same 4-step reasoning chain the real prompt asks for:
+// why relevant -> matched/mismatched conditions -> transferable lessons ->
+// recommended investigation directions.
 
 function likelihoodImpactFromScore(score: number): "High" | "Medium" | "Low" {
   if (score >= 70) return "High";
@@ -47,21 +50,43 @@ export function buildFallbackAnalysis(
   const top = cases.slice(0, 3);
   const { level: confidence, reason: confidenceReason } = confidenceFromCases(cases);
 
+  // Step 1: why relevant + attribution, per case.
   const attributions = top.map((c) => ({
     caseId: c.id,
+    whyRelevant: `该案例被检索到是因为${c.relevanceExplanation}（相关性评分 ${c.relevanceScore}/100）。`,
     attribution: `${c.rootCause}；处理措施为「${c.resolution}」，最终结果：${c.outcome}。`,
   }));
 
-  const keyDifferences = top.map((c) => ({
-    aspect: "放大规模 / 阶段",
-    current: `${input.currentStage} · ${input.scale}`,
-    historical: `${c.stage} · ${c.scale}（${c.id}）`,
-    note:
-      c.stage === input.currentStage
-        ? "阶段相同，可重点比较放大倍数差异对传质/传热的影响。"
-        : "阶段不同，历史结论需结合当前阶段的设备与控制水平谨慎迁移。",
-  }));
+  // Step 2: matched / mismatched conditions, per case (one row per aspect).
+  const keyDifferences = top.flatMap((c) => {
+    const sameStage = c.stage === input.currentStage;
+    const rows = [
+      {
+        aspect: "工艺阶段（Stage）",
+        current: input.currentStage,
+        historical: `${c.stage}（${c.id}）`,
+        matched: sameStage,
+        sourceCaseId: c.id,
+        note: sameStage
+          ? "阶段相同，经验可直接参考。"
+          : "阶段不同，历史结论需结合当前阶段的设备与控制水平谨慎迁移。",
+      },
+      {
+        aspect: "放大规模（Scale）",
+        current: input.scale,
+        historical: `${c.scale}（${c.id}）`,
+        matched: c.matchedTags.length >= 2,
+        sourceCaseId: c.id,
+        note:
+          c.matchedTags.length >= 2
+            ? `与当前场景共享关键条件：${c.matchedTags.join(", ")}，放大倍数量级相近。`
+            : "放大量级或工序类型重叠有限，需谨慎比较传质/传热差异。",
+      },
+    ];
+    return rows;
+  });
 
+  // Step 3: transferable / not, per case.
   const transferableLessons = top.map((c) => {
     const applicable = c.matchedTags.length >= 2;
     return {
@@ -73,6 +98,13 @@ export function buildFallbackAnalysis(
       sourceCaseId: c.id,
     };
   });
+
+  // Step 4: recommended investigation directions — the actionable conclusion.
+  const recommendedActions = top.map((c) => ({
+    action: `核实当前场景是否存在与${c.id}相同的根因条件：${c.rootCause}`,
+    rationale: `${c.id}中采用「${c.resolution}」后${c.outcome}，若根因条件相符，可作为优先排查方向。`,
+    relatedCaseIds: [c.id],
+  }));
 
   const risks = top.map((c) => {
     const level = likelihoodImpactFromScore(c.relevanceScore);
@@ -105,6 +137,7 @@ export function buildFallbackAnalysis(
     attributions,
     keyDifferences,
     transferableLessons,
+    recommendedActions,
     risks,
     scenarioAnalysis,
     confidence,

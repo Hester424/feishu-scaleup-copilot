@@ -79,6 +79,11 @@ export default function AnalysisPage() {
               <p className="mt-1 text-amber-700">{analysis.fallbackReason}</p>
             </div>
           )}
+          {analysis.servedFromCache && (
+            <div className="rounded-lg border border-sky-200 bg-sky-50 p-3 text-xs text-sky-700">
+              ⚡ 命中缓存（Cache Hit）— 相同调查参数与证据案例组合此前已分析过，直接返回已有结果，未重复调用 LLM。
+            </div>
+          )}
 
           <div className="rounded-lg border border-slate-200 bg-white p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -89,24 +94,33 @@ export default function AnalysisPage() {
             <p className="mt-2 text-xs text-slate-400">{analysis.confidenceReason}</p>
           </div>
 
-          <Section title="历史案例归因（Attribution：成功/失败）">
-            <div className="space-y-2">
+          <Section title="① 案例相关性与归因（Why Relevant & Attribution）">
+            <div className="space-y-3">
               {analysis.attributions.map((a, i) => (
-                <div key={i} className="flex gap-2 text-sm">
+                <div key={i} className="rounded-md border border-slate-200 p-3 text-sm">
                   <span className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-500">
                     {a.caseId}
                   </span>
-                  <span className="text-slate-600">{a.attribution}</span>
+                  <p className="mt-1.5 text-slate-700">
+                    <span className="font-medium text-slate-900">为什么相关：</span>
+                    {a.whyRelevant}
+                  </p>
+                  <p className="mt-1 text-slate-600">
+                    <span className="font-medium text-slate-900">历史归因：</span>
+                    {a.attribution}
+                  </p>
                 </div>
               ))}
             </div>
           </Section>
 
-          <Section title="关键差异对比（Key Differences）：当前场景 vs 历史案例">
+          <Section title="② 关键条件对比（Key Differences）：匹配 ✓ / 不匹配 ✗">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px] text-left text-sm">
+              <table className="w-full min-w-[680px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 text-xs text-slate-400">
+                    <th className="pb-2 pr-3 font-medium">案例</th>
+                    <th className="pb-2 pr-3 font-medium">匹配</th>
                     <th className="pb-2 pr-4 font-medium">对比维度</th>
                     <th className="pb-2 pr-4 font-medium">当前场景</th>
                     <th className="pb-2 pr-4 font-medium">历史案例</th>
@@ -116,6 +130,21 @@ export default function AnalysisPage() {
                 <tbody>
                   {analysis.keyDifferences.map((d, i) => (
                     <tr key={i} className="border-b border-slate-50 align-top">
+                      <td className="py-2 pr-3 font-mono text-xs text-slate-400">
+                        {d.sourceCaseId}
+                      </td>
+                      <td className="py-2 pr-3">
+                        <span
+                          className={
+                            d.matched
+                              ? "text-emerald-600"
+                              : "text-red-500"
+                          }
+                          title={d.matched ? "匹配" : "不匹配"}
+                        >
+                          {d.matched ? "✓" : "✗"}
+                        </span>
+                      </td>
                       <td className="py-2 pr-4 font-medium text-slate-700">{d.aspect}</td>
                       <td className="py-2 pr-4 text-slate-600">{d.current}</td>
                       <td className="py-2 pr-4 text-slate-600">{d.historical}</td>
@@ -127,7 +156,7 @@ export default function AnalysisPage() {
             </div>
           </Section>
 
-          <Section title="经验迁移（Transferable Lessons）：可迁移 / 不适用">
+          <Section title="③ 经验迁移（Transferable Lessons）：可迁移 / 不适用">
             <div className="space-y-2">
               {analysis.transferableLessons.map((l, i) => (
                 <div
@@ -158,6 +187,43 @@ export default function AnalysisPage() {
               ))}
             </div>
           </Section>
+
+          <div className="rounded-lg border border-emerald-300 bg-emerald-50/60 p-5">
+            <h2 className="mb-3 text-sm font-semibold text-emerald-900">
+              ④ 推荐的调查方向（Recommended Investigation Directions）
+            </h2>
+            <ol className="space-y-3">
+              {analysis.recommendedActions.map((r, i) => (
+                <li key={i} className="rounded-md bg-white p-3 text-sm shadow-sm">
+                  <div className="flex items-start gap-2">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-[11px] font-medium text-white">
+                      {i + 1}
+                    </span>
+                    <div>
+                      <p className="font-medium text-slate-900">{r.action}</p>
+                      <p className="mt-1 text-xs text-slate-500">{r.rationale}</p>
+                      {r.relatedCaseIds.length > 0 && (
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {r.relatedCaseIds.map((id) => (
+                            <span
+                              key={id}
+                              className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] text-slate-500"
+                            >
+                              {id}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <p className="pt-1 text-xs font-medium uppercase tracking-wide text-slate-400">
+            补充信息（Supporting Detail）
+          </p>
 
           <Section title="风险项（Risks，按可能性 × 影响排列）">
             <div className="space-y-2">
