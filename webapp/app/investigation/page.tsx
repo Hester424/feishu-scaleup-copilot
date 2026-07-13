@@ -131,7 +131,7 @@ export default function InvestigationPage() {
 
   return (
     <PageShell
-      eyebrow="第 1 步 / 共 5 步"
+      eyebrow="第 1 步 / 共 6 步"
       title="新建放大调查（New Scale-up Investigation）"
       description="结构化录入放大场景，Copilot将据此检索相关历史案例。这是一个专业调查工具，不是通用AI聊天框。"
     >

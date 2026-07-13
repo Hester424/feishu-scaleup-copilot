@@ -69,7 +69,7 @@ export default function ValidationPage() {
 
   return (
     <PageShell
-      eyebrow="第 5 步 / 共 5 步"
+      eyebrow="第 6 步 / 共 6 步"
       title="专家确认与知识沉淀（Expert Validation & Knowledge Update）"
       description="人在回路（Human-in-the-loop）：工程师始终对最终技术决策负责。确认后的结论回写知识库，供后续项目复用。"
     >

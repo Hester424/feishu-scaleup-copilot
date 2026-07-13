@@ -19,7 +19,7 @@ export default function EvidencePage() {
 
   return (
     <PageShell
-      eyebrow="第 2 步 / 共 5 步"
+      eyebrow="第 2 步 / 共 6 步"
       title="证据收集（Evidence Collection）"
       description="Copilot从历史知识库中检索到以下案例——AI在找证据，不是在猜答案。相关性评分与匹配依据均可见。"
     >

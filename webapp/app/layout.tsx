@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Link from "next/link";
 import { InvestigationProvider } from "@/lib/investigationContext";
 import { StepperNav } from "@/components/StepperNav";
 
@@ -33,18 +34,26 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
         <InvestigationProvider>
           <header className="border-b border-slate-200 bg-white">
-            <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-500 text-sm font-bold text-slate-900">
-                Sc
+            <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-500 text-sm font-bold text-slate-900">
+                  Sc
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">
+                    工艺放大调查助手（Scale-up Investigation Copilot）
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    有据可查 · 可解释 · 可追溯 · 可审计（Evidence-based · Explainable · Traceable · Auditable）
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-900">
-                  工艺放大调查助手（Scale-up Investigation Copilot）
-                </p>
-                <p className="text-xs text-slate-500">
-                  有据可查 · 可解释 · 可追溯 · 可审计（Evidence-based · Explainable · Traceable · Auditable）
-                </p>
-              </div>
+              <Link
+                href="/upload"
+                className="shrink-0 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-slate-500 hover:text-slate-900"
+              >
+                管理知识库（Manage Knowledge Base）
+              </Link>
             </div>
           </header>
           <StepperNav />

@@ -47,7 +47,7 @@ export default function AnalysisPage() {
 
   return (
     <PageShell
-      eyebrow="第 3 步 / 共 5 步"
+      eyebrow="第 3 步 / 共 6 步"
       title="案例比较与分析（Case Comparison & Analysis）"
       description="基于检索到的历史案例生成结构化分析——不仅是检索，更是推理（Reasoning, not just search）。"
     >
@@ -277,10 +277,10 @@ export default function AnalysisPage() {
         </Link>
         {analysis && !loading && (
           <Link
-            href="/report"
+            href="/recommendation"
             className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-700"
           >
-            生成调查报告 →
+            参数推荐 →
           </Link>
         )}
       </div>

@@ -8,6 +8,7 @@ const STEPS = [
   { href: "/investigation", label: "定义问题" },
   { href: "/evidence", label: "收集证据" },
   { href: "/analysis", label: "比较分析" },
+  { href: "/recommendation", label: "参数推荐" },
   { href: "/report", label: "调查报告" },
   { href: "/validation", label: "专家确认" },
 ];
@@ -22,10 +23,12 @@ export function StepperNav() {
     retrievedCases.length > 0,
     !!analysis,
     !!analysis,
+    !!analysis,
   ];
   const completed = [
     !!input,
     retrievedCases.length > 0,
+    !!analysis,
     !!analysis,
     !!analysis,
     !!validation,

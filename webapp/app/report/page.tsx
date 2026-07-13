@@ -119,7 +119,7 @@ export default function ReportPage() {
 
   return (
     <PageShell
-      eyebrow="第 4 步 / 共 5 步"
+      eyebrow="第 5 步 / 共 6 步"
       title="调查报告（Investigation Report）"
       description="每条结论均附引用来源——可解释、可追溯、可审计（Explainability & Auditability by Design）。"
     >
@@ -250,7 +250,7 @@ export default function ReportPage() {
       </div>
 
       <div className="mt-6 flex items-center justify-between">
-        <Link href="/analysis" className="text-sm text-slate-500 hover:text-slate-700">
+        <Link href="/recommendation" className="text-sm text-slate-500 hover:text-slate-700">
           ← 返回
         </Link>
         <Link
