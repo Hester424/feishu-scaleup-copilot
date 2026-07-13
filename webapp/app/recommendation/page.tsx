@@ -97,8 +97,10 @@ export default function RecommendationPage() {
       description="展示产品设计方向：当案例积累足够时，系统可基于历史数据生成参数推荐区间。当前尚未启用。"
     >
       <div className="relative overflow-hidden rounded-lg border-2 border-dashed border-slate-300">
-        {/* Designed-but-inactive content behind the overlay */}
-        <div className="pointer-events-none space-y-6 bg-white p-6 opacity-40 select-none">
+        {/* Designed-but-inactive content — kept legible so evaluators can see
+            the design; inactivity is signaled by the corner badge + bottom
+            banner below, not by hiding the content itself. */}
+        <div className="pointer-events-none space-y-6 bg-white p-6 pb-14 opacity-90 grayscale-[15%] select-none">
           <div>
             <h2 className="mb-3 text-sm font-semibold text-slate-900">
               关键工艺参数分布（Key Parameter Distribution）
@@ -160,20 +162,15 @@ export default function RecommendationPage() {
           </div>
         </div>
 
-        {/* Frosted-glass "Coming Soon" overlay */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/70 p-6 text-center backdrop-blur-sm">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900/90 text-xl text-white">
-            🔒
-          </div>
-          <p className="mt-4 rounded-full border border-slate-300 bg-white px-4 py-1 text-xs font-semibold uppercase tracking-wide text-slate-700">
-            Coming Soon
-          </p>
-          <p className="mt-3 max-w-md text-sm font-medium text-slate-800">
-            需积累更多案例数据解锁此能力
-          </p>
-          <p className="mt-2 max-w-md text-xs text-slate-500">
-            上方界面展示了参数推荐功能的设计方向，暂未启用——见下方说明。
-          </p>
+        {/* Corner badge — small and unobtrusive so the mock content stays visible */}
+        <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-700 shadow-sm">
+          <span>🔒</span>
+          Coming Soon
+        </div>
+
+        {/* Bottom banner — states inactivity without covering the design */}
+        <div className="absolute inset-x-0 bottom-0 bg-slate-900/90 px-4 py-2 text-center text-xs font-medium text-white">
+          需积累更多案例数据解锁此能力 — 以上为设计原型，暂未启用
         </div>
       </div>
 
