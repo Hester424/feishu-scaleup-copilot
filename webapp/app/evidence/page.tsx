@@ -38,6 +38,11 @@ export default function EvidencePage() {
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs text-slate-400">{c.id}</span>
                 <DocTypeTag docType={c.docType} />
+                {c.isUserAdded && (
+                  <span className="rounded-full border border-sky-300 bg-sky-50 px-2 py-0.5 text-[11px] font-medium text-sky-700">
+                    本轮新增（Added this session）
+                  </span>
+                )}
                 <span className="text-xs text-slate-400">
                   {c.stage} · {c.scale}
                 </span>
@@ -51,6 +56,12 @@ export default function EvidencePage() {
             <p className="mt-1 text-sm text-slate-500">
               产品/反应类型：{c.productType}
             </p>
+
+            {c.caveat && (
+              <div className="mt-3 rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+                {c.caveat}
+              </div>
+            )}
 
             <div className="mt-3 rounded-md bg-slate-50 p-3 text-xs text-slate-600">
               <span className="font-medium text-slate-700">相关性解释：</span>{" "}

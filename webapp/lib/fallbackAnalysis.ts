@@ -133,7 +133,7 @@ export function buildFallbackAnalysis(
   return {
     summary: `⚠ 当前展示为基于检索案例生成的预设静态分析示例（未配置 OpenAI API Key，非实时 LLM 推理）。系统基于相关性最高的 ${top.length} 条历史案例（${top
       .map((c) => c.id)
-      .join(", ")}）进行了规则化归纳，可用于走通 Page 4/5 演示流程；如需真实推理分析，请在 webapp/.env.local 中配置 OPENAI_API_KEY 后重试。`,
+      .join(", ")}）进行了规则化归纳，可用于走通后续演示流程；如需真实推理分析，请在 webapp/.env.local 中配置 OPENAI_API_KEY 后重试。`,
     attributions,
     keyDifferences,
     transferableLessons,

@@ -262,6 +262,8 @@ export const KNOWLEDGE_BASE: HistoricalCase[] = [
       "solvent_swap",
       "exposure_time",
     ],
+    caveat:
+      "⚠ 诊断陷阱：该案例的HPLC杂质峰保留时间与CASE-001的二聚体杂质（Dimer Impurity）非常接近，初期曾被误判为同一类杂质、按氟化步骤问题排查。经LC-MS确证后发现实为蒸馏工序的热降解产物，根因在下游单元操作而非氟化反应本身——两案例症状相似但根因不同，仅靠关键词/色谱保留时间检索会得出错误结论。",
   },
 ];
 
@@ -292,13 +294,29 @@ const KEYWORD_TAG_MAP: { pattern: RegExp; tag: string }[] = [
   { pattern: /crystalliz|结晶/i, tag: "crystallization" },
 ];
 
-function extractTagsFromText(...texts: string[]): string[] {
+// Exported (not just used internally by retrieval) so any page that lets an
+// engineer add a new case — Upload's AI-parse flow, the Case Library's
+// manual-entry form, or Expert Validation writing a confirmed investigation
+// back to the KB — can auto-suggest tags from free text instead of asking
+// engineers to hand-pick from the internal tag vocabulary.
+export function deriveTagsFromText(...texts: string[]): string[] {
   const joined = texts.join(" ");
   const found = new Set<string>();
   for (const { pattern, tag } of KEYWORD_TAG_MAP) {
     if (pattern.test(joined)) found.add(tag);
   }
   return Array.from(found);
+}
+
+// Generates the next sequential case ID (CASE-011, CASE-012, ...) given the
+// current pool, so newly added cases get a real, stable, citable ID instead
+// of a placeholder like "CASE-NEW".
+export function nextCaseId(pool: HistoricalCase[]): string {
+  const max = pool.reduce((m, c) => {
+    const match = /^CASE-(\d+)$/.exec(c.id);
+    return match ? Math.max(m, parseInt(match[1], 10)) : m;
+  }, 0);
+  return `CASE-${String(max + 1).padStart(3, "0")}`;
 }
 
 function scaleJumpBucket(scale: string): string | null {
@@ -325,11 +343,12 @@ export const STEP_TYPE_OPTIONS: { label: string; tag: string }[] = [
 
 export function retrieveRelevantCases(
   input: InvestigationInput,
+  casePool: HistoricalCase[] = KNOWLEDGE_BASE,
   topN = 5
 ): RetrievedCase[] {
   const queryTags = Array.from(
     new Set([
-      ...extractTagsFromText(
+      ...deriveTagsFromText(
         input.synthesisRoute,
         input.problemDescription,
         input.equipment
@@ -339,7 +358,7 @@ export function retrieveRelevantCases(
   );
   const queryBucket = scaleJumpBucket(input.scale);
 
-  const scored = KNOWLEDGE_BASE.map((c) => {
+  const scored = casePool.map((c) => {
     const matchedTags = c.tags.filter((t) => queryTags.includes(t));
     let score = matchedTags.length * 18;
 

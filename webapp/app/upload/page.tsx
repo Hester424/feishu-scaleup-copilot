@@ -1,9 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/PageShell";
 import { DocTypeTag } from "@/components/DocTypeTag";
-import { DocType, Stage } from "@/lib/types";
+import { useInvestigation } from "@/lib/investigationContext";
+import { deriveTagsFromText } from "@/lib/knowledgeBase";
+import { DocType, HistoricalCase, Stage } from "@/lib/types";
 
 interface ParsedCaseDraft {
   docType: DocType;
@@ -56,10 +59,12 @@ const STAGE_LABELS: Record<Stage, string> = {
 };
 
 export default function UploadPage() {
+  const { addCase } = useInvestigation();
   const [step, setStep] = useState<Step>("idle");
   const [fileName, setFileName] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [draft, setDraft] = useState<ParsedCaseDraft>(MOCK_PARSED_RESULT);
+  const [createdCase, setCreatedCase] = useState<HistoricalCase | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function startParsing(name: string) {
@@ -101,6 +106,34 @@ export default function UploadPage() {
     setStep("idle");
     setFileName(null);
     setDraft(MOCK_PARSED_RESULT);
+    setCreatedCase(null);
+  }
+
+  function confirmIngest() {
+    const autoTags = deriveTagsFromText(
+      draft.stepType,
+      draft.problemDescription,
+      draft.rootCause,
+      draft.resolution
+    );
+    const created = addCase({
+      docType: draft.docType,
+      productType: `${draft.product} · ${draft.stepType}`,
+      stage: draft.stage,
+      scale: draft.scale,
+      scenario: draft.problemDescription,
+      rootCause: draft.rootCause,
+      resolution: draft.resolution,
+      outcome: "待后续批次验证确认（本案例来自文档解析，尚未经专家复核）",
+      keyParameters: Object.fromEntries(
+        draft.keyParameters
+          .filter((p) => p.name.trim() && p.value.trim())
+          .map((p) => [p.name.trim(), p.value.trim()])
+      ),
+      tags: autoTags,
+    });
+    setCreatedCase(created);
+    setStep("success");
   }
 
   return (
@@ -271,7 +304,7 @@ export default function UploadPage() {
               ← 重新上传
             </button>
             <button
-              onClick={() => setStep("success")}
+              onClick={confirmIngest}
               className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-700"
             >
               确认入库（Confirm & Add to Knowledge Base）
@@ -280,11 +313,11 @@ export default function UploadPage() {
         </div>
       )}
 
-      {step === "success" && (
+      {step === "success" && createdCase && (
         <div className="space-y-5">
           <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-5">
             <p className="text-sm font-semibold text-emerald-800">
-              ✓ 已入库 — 该案例将在后续调查中被检索到
+              ✓ 已入库为 <span className="font-mono">{createdCase.id}</span> — 该案例现已可在后续调查中被检索到
             </p>
             <p className="mt-1 text-sm text-emerald-700">
               {draft.product} · {draft.stepType}
@@ -295,7 +328,7 @@ export default function UploadPage() {
             <h3 className="text-sm font-semibold text-slate-900">新增知识条目</h3>
             <div className="mt-3 rounded-md border border-dashed border-slate-300 p-4 text-sm">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs text-slate-400">CASE-NEW</span>
+                <span className="font-mono text-xs text-slate-400">{createdCase.id}</span>
                 <DocTypeTag docType={draft.docType} />
                 <span className="text-xs text-slate-400">
                   {STAGE_LABELS[draft.stage]} · {draft.scale}
@@ -305,15 +338,32 @@ export default function UploadPage() {
               <p className="mt-1 text-xs text-slate-500">
                 根因：{draft.rootCause}
               </p>
+              <p className="mt-1 text-xs text-slate-500">
+                自动识别标签：{createdCase.tags.join(", ") || "（未识别到标签，可在案例库中手动补充）"}
+              </p>
             </div>
           </div>
 
-          <button
-            onClick={reset}
-            className="rounded-md border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            继续录入下一条案例
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={reset}
+              className="rounded-md border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              继续录入下一条案例
+            </button>
+            <Link
+              href="/cases"
+              className="rounded-md border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              查看案例库 →
+            </Link>
+            <Link
+              href="/investigation"
+              className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-700"
+            >
+              新建调查验证检索 →
+            </Link>
+          </div>
         </div>
       )}
 

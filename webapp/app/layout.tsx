@@ -49,10 +49,10 @@ export default function RootLayout({
                 </div>
               </div>
               <Link
-                href="/upload"
+                href="/cases"
                 className="shrink-0 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-slate-500 hover:text-slate-900"
               >
-                管理知识库（Manage Knowledge Base）
+                案例库（Case Library）
               </Link>
             </div>
           </header>

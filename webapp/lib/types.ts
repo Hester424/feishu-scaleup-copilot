@@ -33,6 +33,17 @@ export interface HistoricalCase {
   outcome: string;
   keyParameters: Record<string, string>;
   tags: string[];
+  /** Optional diagnostic pitfall note — e.g. "this case's symptoms look like
+   * another case's, but the confirmed root cause is different." Surfaced as
+   * a prominent callout in the UI (not just buried in the data) so it's
+   * legible at a glance that retrieval is doing more than keyword matching. */
+  caveat?: string;
+  /** True for cases added during this session (via Upload or Expert
+   * Validation), as opposed to the seed knowledge base. Used to badge new
+   * entries in the Case Library. */
+  isUserAdded?: boolean;
+  /** ISO timestamp for user-added cases. */
+  addedAt?: string;
 }
 
 export interface RetrievedCase extends HistoricalCase {

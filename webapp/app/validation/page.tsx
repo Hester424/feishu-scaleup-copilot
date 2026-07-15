@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/PageShell";
 import { useInvestigation } from "@/lib/investigationContext";
-import { ValidationDecision } from "@/lib/types";
+import { deriveTagsFromText } from "@/lib/knowledgeBase";
+import { HistoricalCase, ValidationDecision } from "@/lib/types";
 
 const DECISIONS: { value: ValidationDecision; label: string; desc: string }[] = [
   { value: "confirmed", label: "确认（Confirm）", desc: "分析结论与工程判断一致，可采纳" },
@@ -23,10 +24,6 @@ const LOOP_STEPS = [
 
 const ROADMAP_ITEMS = [
   {
-    name: "工艺参数预测（Parameter Prediction）",
-    desc: "基于历史数据给出具体工艺参数（如温度、投料速率）的推荐区间，而非仅提供历史案例参考。",
-  },
-  {
     name: "工艺优化建议（Process Optimization）",
     desc: "结合历史案例与实时生产数据，主动给出工艺条件的优化调整建议。",
   },
@@ -42,11 +39,12 @@ const ROADMAP_ITEMS = [
 
 export default function ValidationPage() {
   const router = useRouter();
-  const { input, analysis, validation, setValidation } = useInvestigation();
+  const { input, analysis, validation, setValidation, addCase } = useInvestigation();
   const [decision, setDecision] = useState<ValidationDecision>("confirmed");
   const [comment, setComment] = useState("");
   const [name, setName] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [writtenCase, setWrittenCase] = useState<HistoricalCase | null>(null);
 
   useEffect(() => {
     if (!input) router.replace("/investigation");
@@ -54,6 +52,8 @@ export default function ValidationPage() {
   }, [input, analysis, router]);
 
   if (!input || !analysis) return null;
+  const currentInput = input;
+  const currentAnalysis = analysis;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -64,6 +64,32 @@ export default function ValidationPage() {
       validatedAt: new Date().toISOString(),
     };
     setValidation(v);
+
+    const autoTags = deriveTagsFromText(
+      currentInput.synthesisRoute,
+      currentInput.problemDescription,
+      currentAnalysis.summary
+    );
+    const created = addCase({
+      docType: "Deviation Report",
+      productType: currentInput.product,
+      stage: currentInput.currentStage,
+      scale: currentInput.scale,
+      scenario: currentInput.problemDescription,
+      rootCause:
+        currentAnalysis.attributions[0]?.attribution ?? currentAnalysis.summary,
+      resolution:
+        currentAnalysis.recommendedActions.map((r) => r.action).join("；") ||
+        "参见调查报告",
+      outcome: `专家确认结果：${
+        DECISIONS.find((d) => d.value === decision)?.label ?? decision
+      }${comment ? `；补充说明：${comment}` : ""}`,
+      keyParameters: {},
+      tags: Array.from(
+        new Set([...(currentInput.suspectedStepTags ?? []), ...autoTags])
+      ),
+    });
+    setWrittenCase(created);
     setSubmitted(true);
   }
 
@@ -158,10 +184,12 @@ export default function ValidationPage() {
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-white p-5">
-            <h3 className="text-sm font-semibold text-slate-900">新知识条目（模拟回写）</h3>
+            <h3 className="text-sm font-semibold text-slate-900">新知识条目（已回写知识库）</h3>
             <div className="mt-3 rounded-md border border-dashed border-slate-300 p-4 text-sm">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs text-slate-400">CASE-NEW</span>
+                <span className="font-mono text-xs text-slate-400">
+                  {writtenCase?.id ?? "CASE-NEW"}
+                </span>
                 <span className="rounded-full border border-blue-300 bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-800">
                   调查报告（已验证 / Validated）
                 </span>
@@ -169,7 +197,14 @@ export default function ValidationPage() {
               <p className="mt-2 text-slate-700">{input.product} — {input.problemDescription}</p>
               <p className="mt-1 text-xs text-slate-500">
                 结论已由 {validation?.validatedBy || name || "Process Engineer"} 于{" "}
-                {new Date(validation?.validatedAt ?? Date.now()).toLocaleString()} 确认，供后续项目检索复用。
+                {validation?.validatedAt
+                  ? new Date(validation.validatedAt).toLocaleString()
+                  : ""}{" "}
+                确认，现已可在
+                <Link href="/cases" className="mx-1 underline">
+                  案例库
+                </Link>
+                中查看，并会被后续新调查检索到。
               </p>
             </div>
           </div>
@@ -209,7 +244,11 @@ export default function ValidationPage() {
           </span>
         </div>
         <p className="mt-1 text-xs text-slate-500">
-          以下能力为规划中方向，本demo暂未实现——展示Copilot从&ldquo;证据推理&rdquo;向&ldquo;主动建议&rdquo;演进的产品路径。
+          以下能力为规划中方向，本demo暂未实现——展示Copilot从&ldquo;证据推理&rdquo;向&ldquo;主动建议&rdquo;演进的产品路径。工艺参数预测方向的说明见
+          <Link href="/recommendation" className="mx-1 underline">
+            参数推荐页
+          </Link>
+          。
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {ROADMAP_ITEMS.map((item) => (

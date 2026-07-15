@@ -79,6 +79,23 @@ const SCENARIOS: Scenario[] = [
       suspectedStepTags: ["chlorination"],
     },
   },
+  {
+    id: "misdiagnosis",
+    buttonLabel: "示例⑤ 疑难案例：杂质误判（体现推理而非关键词匹配）",
+    expectedTopCase:
+      "预期最相关：CASE-010 与 CASE-001 — 二者HPLC杂质峰特征相近，但根因不同；Copilot需要区分二者，而非仅按关键词判定为同一问题",
+    input: {
+      product: "API-X（抗病毒原料药，占位名称）",
+      synthesisRoute: "第3步：氟化反应之后的共沸脱水/蒸馏步骤",
+      currentStage: "Pilot",
+      scale: "从15L放大至180L蒸馏釜",
+      equipment: "蒸馏釜 + 真空系统",
+      targetYield: "≥ 90%",
+      problemDescription:
+        "氟化反应完成后的共沸脱水（蒸馏）步骤中，HPLC在与二聚体杂质（Dimer Impurity）相近的保留时间处检出新增峰，尚未确证是否为二聚体杂质还是其他物质。",
+      suspectedStepTags: ["fluorination", "distillation"],
+    },
+  },
 ];
 
 const STAGES: Stage[] = ["Lab", "Pilot", "Commercial"];
@@ -90,7 +107,7 @@ const STAGE_LABELS: Record<Stage, string> = {
 
 export default function InvestigationPage() {
   const router = useRouter();
-  const { setInput, setRetrievedCases } = useInvestigation();
+  const { setInput, setRetrievedCases, cases } = useInvestigation();
   const [form, setForm] = useState<InvestigationInput>(SCENARIOS[0].input);
   const [activeScenario, setActiveScenario] = useState(SCENARIOS[0].id);
   const [submitting, setSubmitting] = useState(false);
@@ -121,7 +138,7 @@ export default function InvestigationPage() {
     e.preventDefault();
     setSubmitting(true);
     setInput(form);
-    setRetrievedCases(retrieveRelevantCases(form));
+    setRetrievedCases(retrieveRelevantCases(form, cases));
     router.push("/evidence");
   }
 
