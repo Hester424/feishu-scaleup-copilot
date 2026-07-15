@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/PageShell";
-import { DocTypeTag } from "@/components/DocTypeTag";
+import { DocTypeTag, DOC_TYPE_LABELS } from "@/components/DocTypeTag";
 import { useInvestigation } from "@/lib/investigationContext";
 import { deriveTagsFromText, STEP_TYPE_OPTIONS } from "@/lib/knowledgeBase";
 import { DocType, HistoricalCase, Stage } from "@/lib/types";
@@ -17,9 +17,9 @@ const DOC_TYPES: DocType[] = [
 
 const STAGES: Stage[] = ["Lab", "Pilot", "Commercial"];
 const STAGE_LABELS: Record<Stage, string> = {
-  Lab: "小试（Lab）",
-  Pilot: "中试（Pilot）",
-  Commercial: "商业化（Commercial）",
+  Lab: "小试 Lab",
+  Pilot: "中试 Pilot",
+  Commercial: "商业化 Commercial",
 };
 
 interface Draft {
@@ -139,9 +139,9 @@ export default function CasesPage() {
 
   return (
     <PageShell
-      eyebrow="案例库（Case Library）"
-      title="工艺放大案例库（All Historical Cases）"
-      description="所有可被Copilot检索的历史案例——包括示例知识库与本轮新增案例。可按文档类型、工序类型筛选，或直接添加新案例。"
+      eyebrow="案例库"
+      title="工艺放大案例库"
+      description="所有可被系统检索的历史案例，包括示例知识库与本轮新增案例。可按文档类型、工序类型筛选，或直接添加新案例。"
     >
       {justAddedId && (
         <div className="mb-5 flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
@@ -178,7 +178,7 @@ export default function CasesPage() {
             <option value="all">全部文档类型</option>
             {DOC_TYPES.map((t) => (
               <option key={t} value={t}>
-                {t}
+                {DOC_TYPE_LABELS[t]}
               </option>
             ))}
           </select>
@@ -203,7 +203,7 @@ export default function CasesPage() {
             href="/upload"
             className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-slate-500 hover:text-slate-900"
           >
-            从文档解析新增（AI Parse from Document）→
+            从文档解析新增 →
           </Link>
           <button
             onClick={() => setShowForm((s) => !s)}
@@ -220,10 +220,10 @@ export default function CasesPage() {
           className="mb-6 rounded-lg border border-slate-200 bg-white p-6"
         >
           <h2 className="mb-4 text-sm font-semibold text-slate-900">
-            添加新案例（Add Case）
+            添加新案例
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="文档类型（Document Type）">
+            <Field label="文档类型">
               <select
                 className="input"
                 value={draft.docType}
@@ -231,12 +231,12 @@ export default function CasesPage() {
               >
                 {DOC_TYPES.map((t) => (
                   <option key={t} value={t}>
-                    {t}
+                    {DOC_TYPE_LABELS[t]}
                   </option>
                 ))}
               </select>
             </Field>
-            <Field label="工艺阶段（Stage）">
+            <Field label="工艺阶段">
               <select
                 className="input"
                 value={draft.stage}
@@ -249,7 +249,7 @@ export default function CasesPage() {
                 ))}
               </select>
             </Field>
-            <Field label="产品/反应类型（Product / Reaction Type）" full>
+            <Field label="产品/反应类型" full>
               <input
                 className="input"
                 value={draft.productType}
@@ -257,7 +257,7 @@ export default function CasesPage() {
                 placeholder='如"某抗病毒原料药，多步合成，含关键氟化步骤"'
               />
             </Field>
-            <Field label="放大规模（Scale）">
+            <Field label="放大规模">
               <input
                 className="input"
                 value={draft.scale}
@@ -292,35 +292,35 @@ export default function CasesPage() {
                 提交时还会自动从场景/根因/处理措施文本中补充识别标签。
               </p>
             </Field>
-            <Field label="场景描述（Scenario）" full>
+            <Field label="场景描述" full>
               <textarea
                 className="input min-h-16 resize-y"
                 value={draft.scenario}
                 onChange={(e) => updateDraft("scenario", e.target.value)}
               />
             </Field>
-            <Field label="根因分析（Root Cause）" full>
+            <Field label="根因分析" full>
               <textarea
                 className="input min-h-16 resize-y"
                 value={draft.rootCause}
                 onChange={(e) => updateDraft("rootCause", e.target.value)}
               />
             </Field>
-            <Field label="处理措施（Resolution）" full>
+            <Field label="处理措施" full>
               <textarea
                 className="input min-h-16 resize-y"
                 value={draft.resolution}
                 onChange={(e) => updateDraft("resolution", e.target.value)}
               />
             </Field>
-            <Field label="结果（Outcome）" full>
+            <Field label="结果" full>
               <textarea
                 className="input min-h-16 resize-y"
                 value={draft.outcome}
                 onChange={(e) => updateDraft("outcome", e.target.value)}
               />
             </Field>
-            <Field label="关键工艺参数（Key Parameters）" full>
+            <Field label="关键工艺参数" full>
               <div className="space-y-2">
                 {draft.keyParameters.map((p, i) => (
                   <div key={i} className="flex gap-2">
@@ -364,7 +364,7 @@ export default function CasesPage() {
               type="submit"
               className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-700"
             >
-              确认入库（Add to Knowledge Base）
+              确认入库
             </button>
           </div>
         </form>

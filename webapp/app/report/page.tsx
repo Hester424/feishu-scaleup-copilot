@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/PageShell";
@@ -92,7 +92,20 @@ function buildMarkdownReport(
 
 export default function ReportPage() {
   const router = useRouter();
-  const { input, analysis, retrievedCases } = useInvestigation();
+  const { input, analysis, retrievedCases, validation } = useInvestigation();
+
+  const investigationId = useMemo(() => {
+    const stamp = new Date();
+    const datePart = `${stamp.getFullYear()}${String(stamp.getMonth() + 1).padStart(2, "0")}${String(stamp.getDate()).padStart(2, "0")}`;
+    const productPart = (input?.product ?? "").replace(/[^A-Za-z0-9]/g, "").slice(0, 6) || "GEN";
+    return `INV-${datePart}-${productPart}`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input?.product]);
+
+  const today = useMemo(
+    () => new Date().toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" }),
+    []
+  );
 
   useEffect(() => {
     if (!input) {
@@ -120,37 +133,52 @@ export default function ReportPage() {
   return (
     <PageShell
       eyebrow="第 5 步 / 共 6 步"
-      title="调查报告（Investigation Report）"
-      description="每条结论均附引用来源——可解释、可追溯、可审计（Explainability & Auditability by Design）。"
+      title="调查报告"
+      description="每条结论均附引用来源，支持追溯与审计。"
     >
-      <div className="mb-5 flex items-center justify-between rounded-lg border border-slate-200 bg-white p-5">
-        <div>
-          <h2 className="text-base font-semibold text-slate-900">
-            {input.product} — 放大调查报告
-          </h2>
-          <p className="text-xs text-slate-400">
-            {input.synthesisRoute} · {input.currentStage} · {input.scale}
-          </p>
+      <div className="mb-5 rounded-lg border border-slate-200 bg-white p-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-slate-900">
+              {input.product} — 放大调查报告
+            </h2>
+            <p className="text-xs text-slate-400">
+              {input.synthesisRoute} · {input.currentStage} · {input.scale}
+            </p>
+          </div>
+          <button
+            onClick={handleExport}
+            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            导出为 Markdown
+          </button>
         </div>
-        <button
-          onClick={handleExport}
-          className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-        >
-          导出为 Markdown
-        </button>
+        <div className="mt-4 grid grid-cols-2 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-4">
+          <MetaField label="调查编号" value={investigationId} />
+          <MetaField
+            label="状态"
+            value={validation ? "已确认" : "草稿 · 待专家确认"}
+          />
+          <MetaField label="负责人" value={validation?.validatedBy || "待指定"} />
+          <MetaField label="日期" value={today} />
+        </div>
       </div>
 
       <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-6">
         {analysis.usedFallback && (
           <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
-            <p className="font-medium">⚠ 预设静态分析示例（Fallback Mode）</p>
+            <p className="font-medium">⚠ 当前使用预设分析示例</p>
             <p className="mt-1 text-amber-700">{analysis.fallbackReason}</p>
           </div>
         )}
 
         <p className="text-sm text-slate-700">{analysis.summary}</p>
 
-        <ReportSection title="① 案例相关性与归因（Why Relevant & Attribution）">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+          证据分析
+        </p>
+
+        <ReportSection title="① 案例相关性与归因">
           {analysis.attributions.map((a, i) => (
             <Cited key={i} caseId={a.caseId} caseById={caseById}>
               <span className="font-medium">为什么相关：</span>
@@ -162,7 +190,7 @@ export default function ReportPage() {
           ))}
         </ReportSection>
 
-        <ReportSection title="② 关键条件对比（Key Differences，匹配 ✓ / 不匹配 ✗）">
+        <ReportSection title="② 关键条件对比">
           {analysis.keyDifferences.map((d, i) => (
             <p key={i} className="text-sm text-slate-700">
               <span className={d.matched ? "text-emerald-600" : "text-red-500"}>
@@ -171,12 +199,12 @@ export default function ReportPage() {
               <span className="font-medium">{d.aspect}：</span>
               当前 {d.current} vs 历史 {d.historical}。
               <span className="text-slate-500"> {d.note}</span>{" "}
-              <span className="font-mono text-xs text-slate-400">[{d.sourceCaseId}]</span>
+              <span className="rounded bg-sky-50 px-1 font-mono text-xs text-sky-700">[{d.sourceCaseId}]</span>
             </p>
           ))}
         </ReportSection>
 
-        <ReportSection title="③ 可迁移经验 / 不适用经验（Transferable Lessons）">
+        <ReportSection title="③ 历史经验参考">
           {analysis.transferableLessons.map((l, i) => (
             <Cited key={i} caseId={l.sourceCaseId} caseById={caseById}>
               <span
@@ -193,7 +221,11 @@ export default function ReportPage() {
           ))}
         </ReportSection>
 
-        <ReportSection title="④ 推荐的调查方向（Recommended Investigation Directions）">
+        <p className="pt-1 text-xs font-medium uppercase tracking-wide text-slate-400">
+          调查结论
+        </p>
+
+        <ReportSection title="④ 建议优先核查事项">
           {analysis.recommendedActions.map((r, i) => (
             <p key={i} className="text-sm text-slate-700">
               <span className="mr-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-medium text-white">
@@ -202,7 +234,7 @@ export default function ReportPage() {
               {r.action}
               <span className="text-slate-500"> — {r.rationale}</span>
               {r.relatedCaseIds.map((id) => (
-                <sup key={id} className="ml-1 text-emerald-700">
+                <sup key={id} className="ml-1 text-sky-700">
                   [{id}]
                 </sup>
               ))}
@@ -210,18 +242,18 @@ export default function ReportPage() {
           ))}
         </ReportSection>
 
-        <ReportSection title="风险项（Risks）">
+        <ReportSection title="风险项">
           {analysis.risks.map((r, i) => (
             <p key={i} className="text-sm text-slate-700">
               {r.risk}（可能性 {LEVEL_LABEL[r.likelihood]} × 影响 {LEVEL_LABEL[r.impact]}）— {r.rationale}
               {r.sourceCaseId && (
-                <sup className="ml-1 text-emerald-700">[{r.sourceCaseId}]</sup>
+                <sup className="ml-1 text-sky-700">[{r.sourceCaseId}]</sup>
               )}
             </p>
           ))}
         </ReportSection>
 
-        <ReportSection title="历史类比（Scenario Analysis，非预测）">
+        <ReportSection title="历史情景参考">
           {analysis.scenarioAnalysis.map((s, i) => (
             <Cited key={i} caseId={s.sourceCaseId} caseById={caseById}>
               历史条件 “{s.historicalCondition}” → 历史结果 “{s.historicalOutcome}”。{s.note}
@@ -229,24 +261,30 @@ export default function ReportPage() {
           ))}
         </ReportSection>
 
+        <p className="pt-1 text-xs font-medium uppercase tracking-wide text-slate-400">
+          结论评估
+        </p>
+
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-900">置信度评级（Confidence）</h3>
+            <h3 className="text-sm font-semibold text-slate-900">置信度评级</h3>
             <ConfidenceBadge level={analysis.confidence} />
           </div>
           <p className="mt-2 text-sm text-slate-600">{analysis.confidenceReason}</p>
+        </div>
 
-          <h3 className="mt-4 text-sm font-semibold text-slate-900">盲区提示（Blind Spots）</h3>
-          <ul className="mt-1 list-inside list-disc text-sm text-slate-600">
+        <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4">
+          <h3 className="text-sm font-semibold text-amber-900">待补充信息</h3>
+          <ul className="mt-1 list-inside list-disc text-sm text-amber-800">
             {analysis.blindSpots.map((b, i) => (
               <li key={i}>{b}</li>
             ))}
           </ul>
-
-          <p className="mt-4 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
-            建议：本报告为AI辅助生成的调查初稿，最终技术决策及实施方案需经资深工程师/跨职能评审确认。
-          </p>
         </div>
+
+        <p className="rounded-md bg-slate-100 px-3 py-2 text-xs text-slate-600">
+          本报告为AI辅助生成的调查初稿，最终方案需经资深工程师评审确认。
+        </p>
       </div>
 
       <div className="mt-6 flex items-center justify-between">
@@ -269,6 +307,17 @@ const LEVEL_LABEL: Record<"High" | "Medium" | "Low", string> = {
   Medium: "中",
   Low: "低",
 };
+
+function MetaField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+        {label}
+      </p>
+      <p className="mt-0.5 text-sm font-medium text-slate-800">{value}</p>
+    </div>
+  );
+}
 
 function ReportSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -293,7 +342,7 @@ function Cited({
     <p className="text-sm text-slate-700">
       {children}{" "}
       <span className="ml-1 inline-flex items-center gap-1 align-middle">
-        <sup className="font-mono text-[11px] text-emerald-700">[{caseId}]</sup>
+        <sup className="font-mono text-[11px] text-sky-700">[{caseId}]</sup>
         {doc && (
           <DocTypeTag docType={doc.docType as import("@/lib/types").DocType} />
         )}

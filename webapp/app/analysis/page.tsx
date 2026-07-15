@@ -48,13 +48,13 @@ export default function AnalysisPage() {
   return (
     <PageShell
       eyebrow="第 3 步 / 共 6 步"
-      title="案例比较与分析（Case Comparison & Analysis）"
-      description="基于检索到的历史案例生成结构化分析——不仅是检索，更是推理（Reasoning, not just search）。"
+      title="案例比较与分析"
+      description="基于检索到的历史案例生成结构化分析。"
     >
       {loading && (
         <div className="rounded-lg border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
           <div className="mx-auto mb-3 h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-slate-900" />
-          正在调用 GPT-4o mini 分析 {retrievedCases.length} 条历史案例…（Reasoning in progress）
+          正在分析 {retrievedCases.length} 条历史案例…
         </div>
       )}
 
@@ -75,30 +75,55 @@ export default function AnalysisPage() {
         <div className="space-y-5">
           {analysis.usedFallback && (
             <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
-              <p className="font-medium">⚠ 预设静态分析示例（Fallback Mode）</p>
+              <p className="font-medium">⚠ 当前使用预设分析示例</p>
               <p className="mt-1 text-amber-700">{analysis.fallbackReason}</p>
             </div>
           )}
           {analysis.servedFromCache && (
             <div className="rounded-lg border border-sky-200 bg-sky-50 p-3 text-xs text-sky-700">
-              ⚡ 命中缓存（Cache Hit）— 相同调查参数与证据案例组合此前已分析过，直接返回已有结果，未重复调用 LLM。
+              ⚡ 相同调查参数与案例组合此前已分析过，直接返回已有结果。
             </div>
           )}
 
+          <div className="grid gap-3 sm:grid-cols-3">
+            {retrievedCases[0] && (
+              <HighlightCard
+                tone="sky"
+                label="引用来源 · 最高相关案例"
+                value={retrievedCases[0].id}
+                detail={`相关性 ${retrievedCases[0].relevanceScore}%`}
+              />
+            )}
+            {analysis.recommendedActions[0] && (
+              <HighlightCard
+                tone="emerald"
+                label="推荐 · 建议优先核查"
+                value={analysis.recommendedActions[0].action}
+              />
+            )}
+            {analysis.blindSpots[0] && (
+              <HighlightCard
+                tone="amber"
+                label="需要复核 · 待补充验证"
+                value={analysis.blindSpots[0]}
+              />
+            )}
+          </div>
+
           <div className="rounded-lg border border-slate-200 bg-white p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-sm font-semibold text-slate-900">分析摘要（Summary）</h2>
+              <h2 className="text-sm font-semibold text-slate-900">分析摘要</h2>
               <ConfidenceBadge level={analysis.confidence} />
             </div>
             <p className="mt-2 text-sm text-slate-600">{analysis.summary}</p>
             <p className="mt-2 text-xs text-slate-400">{analysis.confidenceReason}</p>
           </div>
 
-          <Section title="① 案例相关性与归因（Why Relevant & Attribution）">
+          <Section title="① 案例相关性与归因">
             <div className="space-y-3">
               {analysis.attributions.map((a, i) => (
                 <div key={i} className="rounded-md border border-slate-200 p-3 text-sm">
-                  <span className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-500">
+                  <span className="shrink-0 rounded bg-sky-50 px-1.5 py-0.5 font-mono text-xs text-sky-700">
                     {a.caseId}
                   </span>
                   <p className="mt-1.5 text-slate-700">
@@ -114,7 +139,7 @@ export default function AnalysisPage() {
             </div>
           </Section>
 
-          <Section title="② 关键条件对比（Key Differences）：匹配 ✓ / 不匹配 ✗">
+          <Section title="② 关键条件对比">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[680px] text-left text-sm">
                 <thead>
@@ -130,7 +155,7 @@ export default function AnalysisPage() {
                 <tbody>
                   {analysis.keyDifferences.map((d, i) => (
                     <tr key={i} className="border-b border-slate-50 align-top">
-                      <td className="py-2 pr-3 font-mono text-xs text-slate-400">
+                      <td className="py-2 pr-3 font-mono text-xs text-sky-700">
                         {d.sourceCaseId}
                       </td>
                       <td className="py-2 pr-3">
@@ -156,7 +181,7 @@ export default function AnalysisPage() {
             </div>
           </Section>
 
-          <Section title="③ 经验迁移（Transferable Lessons）：可迁移 / 不适用">
+          <Section title="③ 历史经验参考">
             <div className="space-y-2">
               {analysis.transferableLessons.map((l, i) => (
                 <div
@@ -177,7 +202,7 @@ export default function AnalysisPage() {
                     >
                       {l.applicable ? "可迁移" : "不适用"}
                     </span>
-                    <span className="font-mono text-xs text-slate-400">
+                    <span className="rounded bg-sky-50 px-1.5 py-0.5 font-mono text-xs text-sky-700">
                       {l.sourceCaseId}
                     </span>
                   </div>
@@ -190,7 +215,7 @@ export default function AnalysisPage() {
 
           <div className="rounded-lg border border-emerald-300 bg-emerald-50/60 p-5">
             <h2 className="mb-3 text-sm font-semibold text-emerald-900">
-              ④ 推荐的调查方向（Recommended Investigation Directions）
+              ④ 建议优先核查事项
             </h2>
             <ol className="space-y-3">
               {analysis.recommendedActions.map((r, i) => (
@@ -222,10 +247,10 @@ export default function AnalysisPage() {
           </div>
 
           <p className="pt-1 text-xs font-medium uppercase tracking-wide text-slate-400">
-            补充信息（Supporting Detail）
+            补充分析
           </p>
 
-          <Section title="风险项（Risks，按可能性 × 影响排列）">
+          <Section title="风险项">
             <div className="space-y-2">
               {analysis.risks.map((r, i) => (
                 <div key={i} className="rounded-md border border-slate-200 p-3 text-sm">
@@ -234,7 +259,7 @@ export default function AnalysisPage() {
                     <RiskTag label={`可能性：${LEVEL_LABEL[r.likelihood]}`} level={r.likelihood} />
                     <RiskTag label={`影响：${LEVEL_LABEL[r.impact]}`} level={r.impact} />
                     {r.sourceCaseId && (
-                      <span className="font-mono text-xs text-slate-400">
+                      <span className="rounded bg-sky-50 px-1.5 py-0.5 font-mono text-xs text-sky-700">
                         {r.sourceCaseId}
                       </span>
                     )}
@@ -245,11 +270,11 @@ export default function AnalysisPage() {
             </div>
           </Section>
 
-          <Section title="情景分析（Scenario Analysis，历史类比，非模型预测）">
+          <Section title="历史情景参考">
             <div className="space-y-2">
               {analysis.scenarioAnalysis.map((s, i) => (
                 <div key={i} className="rounded-md bg-slate-50 p-3 text-sm">
-                  <span className="font-mono text-xs text-slate-400">
+                  <span className="rounded bg-sky-50 px-1.5 py-0.5 font-mono text-xs text-sky-700">
                     {s.sourceCaseId}
                   </span>
                   <p className="mt-1 text-slate-700">
@@ -261,13 +286,14 @@ export default function AnalysisPage() {
             </div>
           </Section>
 
-          <Section title="盲区提示（Blind Spots，检索案例未覆盖的方面）">
-            <ul className="list-inside list-disc space-y-1 text-sm text-slate-600">
+          <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-5">
+            <h2 className="mb-3 text-sm font-semibold text-amber-900">待补充信息</h2>
+            <ul className="list-inside list-disc space-y-1 text-sm text-amber-800">
               {analysis.blindSpots.map((b, i) => (
                 <li key={i}>{b}</li>
               ))}
             </ul>
-          </Section>
+          </div>
         </div>
       )}
 
@@ -285,6 +311,34 @@ export default function AnalysisPage() {
         )}
       </div>
     </PageShell>
+  );
+}
+
+const TONE_STYLES: Record<"sky" | "emerald" | "amber", string> = {
+  sky: "border-sky-200 bg-sky-50 text-sky-700",
+  emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  amber: "border-amber-200 bg-amber-50 text-amber-700",
+};
+
+function HighlightCard({
+  tone,
+  label,
+  value,
+  detail,
+}: {
+  tone: "sky" | "emerald" | "amber";
+  label: string;
+  value: string;
+  detail?: string;
+}) {
+  return (
+    <div className={`rounded-lg border p-4 ${TONE_STYLES[tone]}`}>
+      <p className="text-[11px] font-medium uppercase tracking-wide">{label}</p>
+      <p className="mt-1.5 line-clamp-2 text-sm font-semibold text-slate-900">
+        {value}
+      </p>
+      {detail && <p className="mt-0.5 text-xs opacity-80">{detail}</p>}
+    </div>
   );
 }
 

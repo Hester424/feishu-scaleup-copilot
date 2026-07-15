@@ -9,30 +9,24 @@ import { deriveTagsFromText } from "@/lib/knowledgeBase";
 import { HistoricalCase, ValidationDecision } from "@/lib/types";
 
 const DECISIONS: { value: ValidationDecision; label: string; desc: string }[] = [
-  { value: "confirmed", label: "确认（Confirm）", desc: "分析结论与工程判断一致，可采纳" },
-  { value: "revised", label: "修正（Revise）", desc: "部分结论需要修改后才能采纳" },
-  { value: "supplemented", label: "补充（Supplement）", desc: "结论基本正确，但需补充遗漏信息" },
+  { value: "confirmed", label: "确认", desc: "分析结论与工程判断一致，可采纳" },
+  { value: "revised", label: "修正", desc: "部分结论需要修改后才能采纳" },
+  { value: "supplemented", label: "补充", desc: "结论基本正确，但需补充遗漏信息" },
 ];
 
-const LOOP_STEPS = [
-  "文档（Document）",
-  "Copilot",
-  "专家（Expert）",
-  "知识库（Knowledge Base）",
-  "下一项目（Next Project）",
-];
+const LOOP_STEPS = ["文档", "系统分析", "专家确认", "知识库", "下一项目"];
 
 const ROADMAP_ITEMS = [
   {
-    name: "工艺优化建议（Process Optimization）",
+    name: "工艺优化建议",
     desc: "结合历史案例与实时生产数据，主动给出工艺条件的优化调整建议。",
   },
   {
-    name: "实时监控数据接入（Real-time Monitoring Integration）",
+    name: "实时监控数据接入",
     desc: "接入中控系统（DCS/SCADA）实时数据，动态更新调查分析与风险提示。",
   },
   {
-    name: "跨基地知识联邦（Cross-plant Knowledge Federation）",
+    name: "跨基地知识联邦",
     desc: "跨厂区、跨品种知识库联合检索，扩大证据覆盖面，加速新品种的经验复用。",
   },
 ];
@@ -96,15 +90,15 @@ export default function ValidationPage() {
   return (
     <PageShell
       eyebrow="第 6 步 / 共 6 步"
-      title="专家确认与知识沉淀（Expert Validation & Knowledge Update）"
-      description="人在回路（Human-in-the-loop）：工程师始终对最终技术决策负责。确认后的结论回写知识库，供后续项目复用。"
+      title="专家确认与知识沉淀"
+      description="工程师对最终技术决策负责。确认后的结论回写知识库，供后续项目复用。"
     >
       {!submitted && !validation ? (
         <form
           onSubmit={handleSubmit}
           className="rounded-lg border border-slate-200 bg-white p-6"
         >
-          <h2 className="text-sm font-semibold text-slate-900">审阅AI生成的调查分析</h2>
+          <h2 className="text-sm font-semibold text-slate-900">审阅系统生成的调查分析</h2>
           <p className="mt-1 text-sm text-slate-500">{analysis.summary}</p>
 
           <div className="mt-5">
@@ -162,7 +156,7 @@ export default function ValidationPage() {
             type="submit"
             className="mt-5 rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-700"
           >
-            确认并更新知识库（Confirm & Update Knowledge Base）
+            确认并更新知识库
           </button>
         </form>
       ) : (
@@ -191,7 +185,7 @@ export default function ValidationPage() {
                   {writtenCase?.id ?? "CASE-NEW"}
                 </span>
                 <span className="rounded-full border border-blue-300 bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-800">
-                  调查报告（已验证 / Validated）
+                  调查报告（已验证）
                 </span>
               </div>
               <p className="mt-2 text-slate-700">{input.product} — {input.problemDescription}</p>
@@ -237,14 +231,14 @@ export default function ValidationPage() {
       <div className="mt-8 rounded-lg border border-dashed border-slate-300 bg-slate-50/60 p-5">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-900">
-            产品演进路径（Roadmap）
+            产品演进路径
           </h3>
           <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
             当前版本聚焦：证据检索与推理分析
           </span>
         </div>
         <p className="mt-1 text-xs text-slate-500">
-          以下能力为规划中方向，本demo暂未实现——展示Copilot从&ldquo;证据推理&rdquo;向&ldquo;主动建议&rdquo;演进的产品路径。工艺参数预测方向的说明见
+          以下能力为规划中方向，本版本暂未实现——展示系统从&ldquo;证据推理&rdquo;向&ldquo;主动建议&rdquo;演进的产品路径。工艺参数预测方向的说明见
           <Link href="/recommendation" className="mx-1 underline">
             参数推荐页
           </Link>
@@ -259,7 +253,7 @@ export default function ValidationPage() {
               <div className="flex items-start justify-between gap-2">
                 <p className="text-sm font-medium text-slate-700">{item.name}</p>
                 <span className="shrink-0 rounded border border-slate-300 px-2 py-0.5 text-[10px] font-medium text-slate-500">
-                  Coming Soon
+                  规划能力
                 </span>
               </div>
               <p className="mt-1 text-xs text-slate-500">{item.desc}</p>

@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/PageShell";
-import { DocTypeTag } from "@/components/DocTypeTag";
+import { DocTypeTag, DOC_TYPE_LABELS } from "@/components/DocTypeTag";
 import { useInvestigation } from "@/lib/investigationContext";
 import { deriveTagsFromText } from "@/lib/knowledgeBase";
 import { DocType, HistoricalCase, Stage } from "@/lib/types";
@@ -26,7 +26,7 @@ interface ParsedCaseDraft {
 const MOCK_PARSED_RESULT: ParsedCaseDraft = {
   docType: "Deviation Report",
   product: "API-X（抗病毒原料药，占位名称）",
-  stepType: "萃取 / 分液（Extraction & Phase Separation）",
+  stepType: "萃取 / 分液",
   stage: "Pilot",
   scale: "从30L放大至300L萃取罐",
   problemDescription:
@@ -53,9 +53,9 @@ const DOC_TYPES: DocType[] = [
 
 const STAGES: Stage[] = ["Lab", "Pilot", "Commercial"];
 const STAGE_LABELS: Record<Stage, string> = {
-  Lab: "小试（Lab）",
-  Pilot: "中试（Pilot）",
-  Commercial: "商业化（Commercial）",
+  Lab: "小试 Lab",
+  Pilot: "中试 Pilot",
+  Commercial: "商业化 Commercial",
 };
 
 export default function UploadPage() {
@@ -138,9 +138,9 @@ export default function UploadPage() {
 
   return (
     <PageShell
-      eyebrow="知识库管理（Knowledge Base Management）"
-      title="知识录入（Knowledge Ingestion）"
-      description="上传历史案例，AI自动解析结构化入库，持续扩充知识库。"
+      eyebrow="知识库管理"
+      title="知识录入"
+      description="上传历史案例，系统自动解析结构化入库，持续扩充知识库。"
     >
       {step === "idle" && (
         <div
@@ -179,7 +179,7 @@ export default function UploadPage() {
       {step === "parsing" && (
         <div className="rounded-lg border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
           <div className="mx-auto mb-3 h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-slate-900" />
-          正在解析文档「{fileName}」…（AI Parsing in progress）
+          正在解析文档「{fileName}」…
         </div>
       )}
 
@@ -198,7 +198,7 @@ export default function UploadPage() {
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="文档类型（Document Type）">
+            <Field label="文档类型">
               <select
                 className="input"
                 value={draft.docType}
@@ -206,13 +206,13 @@ export default function UploadPage() {
               >
                 {DOC_TYPES.map((t) => (
                   <option key={t} value={t}>
-                    {t}
+                    {DOC_TYPE_LABELS[t]}
                   </option>
                 ))}
               </select>
             </Field>
 
-            <Field label="工艺阶段（Stage）">
+            <Field label="工艺阶段">
               <select
                 className="input"
                 value={draft.stage}
@@ -226,7 +226,7 @@ export default function UploadPage() {
               </select>
             </Field>
 
-            <Field label="产品名称（Product / API）" full>
+            <Field label="产品/API名称" full>
               <input
                 className="input"
                 value={draft.product}
@@ -234,7 +234,7 @@ export default function UploadPage() {
               />
             </Field>
 
-            <Field label="工序类型（Process Step Type）">
+            <Field label="工序类型">
               <input
                 className="input"
                 value={draft.stepType}
@@ -242,7 +242,7 @@ export default function UploadPage() {
               />
             </Field>
 
-            <Field label="放大规模（Scale）">
+            <Field label="放大规模">
               <input
                 className="input"
                 value={draft.scale}
@@ -250,7 +250,7 @@ export default function UploadPage() {
               />
             </Field>
 
-            <Field label="问题描述（Problem Description）" full>
+            <Field label="问题描述" full>
               <textarea
                 className="input min-h-20 resize-y"
                 value={draft.problemDescription}
@@ -258,7 +258,7 @@ export default function UploadPage() {
               />
             </Field>
 
-            <Field label="根因分析（Root Cause）" full>
+            <Field label="根因分析" full>
               <textarea
                 className="input min-h-20 resize-y"
                 value={draft.rootCause}
@@ -266,7 +266,7 @@ export default function UploadPage() {
               />
             </Field>
 
-            <Field label="处理措施（Resolution）" full>
+            <Field label="处理措施" full>
               <textarea
                 className="input min-h-20 resize-y"
                 value={draft.resolution}
@@ -274,7 +274,7 @@ export default function UploadPage() {
               />
             </Field>
 
-            <Field label="关键工艺参数（Key Parameters）" full>
+            <Field label="关键工艺参数" full>
               <div className="space-y-2">
                 {draft.keyParameters.map((p, i) => (
                   <div key={i} className="flex gap-2">
@@ -307,7 +307,7 @@ export default function UploadPage() {
               onClick={confirmIngest}
               className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-700"
             >
-              确认入库（Confirm & Add to Knowledge Base）
+              确认入库
             </button>
           </div>
         </div>
@@ -349,7 +349,7 @@ export default function UploadPage() {
               onClick={reset}
               className="rounded-md border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
-              继续录入下一条案例
+              继续录入
             </button>
             <Link
               href="/cases"
@@ -361,14 +361,14 @@ export default function UploadPage() {
               href="/investigation"
               className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-700"
             >
-              新建调查验证检索 →
+              新建调查 →
             </Link>
           </div>
         </div>
       )}
 
       <p className="mt-8 text-center text-xs text-slate-400">
-        Demo演示流程，实际部署将对接企业DMS/LIMS系统自动导入
+        当前为演示流程，实际部署将对接企业DMS/LIMS系统自动导入
       </p>
 
       <style jsx global>{`

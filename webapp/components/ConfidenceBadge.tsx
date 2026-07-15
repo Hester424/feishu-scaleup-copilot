@@ -7,9 +7,9 @@ const STYLES: Record<ConfidenceLevel, string> = {
 };
 
 const LABELS: Record<ConfidenceLevel, string> = {
-  high: "高置信度（High）— 可参考",
-  medium: "中置信度（Medium）— 建议复核",
-  low: "低置信度（Low）— 需专家介入",
+  high: "高置信度 — 可参考",
+  medium: "中置信度 — 建议复核",
+  low: "低置信度 — 需专家介入",
 };
 
 export function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {

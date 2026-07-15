@@ -275,8 +275,7 @@ export async function POST(req: NextRequest) {
     const analysis: AnalysisResult = {
       ...buildFallbackAnalysis(input, cases),
       usedFallback: true,
-      fallbackReason:
-        "OPENAI_API_KEY 未配置。请在 webapp/.env.local 中设置后重启开发服务器以启用真实 LLM 分析。",
+      fallbackReason: "当前展示为示例分析结果，仅用于演示系统流程。",
     };
     return NextResponse.json({ analysis });
   }
@@ -313,11 +312,11 @@ export async function POST(req: NextRequest) {
     cacheSet(cacheKey, analysis);
     return NextResponse.json({ analysis });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("Analysis API call failed:", err);
     const analysis: AnalysisResult = {
       ...buildFallbackAnalysis(input, cases),
       usedFallback: true,
-      fallbackReason: `调用 OpenAI API 失败（${message}），已自动切换为预设静态分析。`,
+      fallbackReason: "当前展示为示例分析结果，仅用于演示系统流程。",
     };
     return NextResponse.json({ analysis });
   }

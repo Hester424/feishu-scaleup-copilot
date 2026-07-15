@@ -10,7 +10,6 @@ import { retrieveRelevantCases, STEP_TYPE_OPTIONS } from "@/lib/knowledgeBase";
 interface Scenario {
   id: string;
   buttonLabel: string;
-  expectedTopCase: string;
   input: InvestigationInput;
 }
 
@@ -18,7 +17,6 @@ const SCENARIOS: Scenario[] = [
   {
     id: "fluorination",
     buttonLabel: "示例① 氟化步骤（默认）",
-    expectedTopCase: "预期最相关：CASE-001 — 氟化步骤放大传热限制，二聚体杂质升高",
     input: {
       product: "API-X（抗病毒原料药，占位名称）",
       synthesisRoute: "第3步：氟化反应（Fluorination）",
@@ -34,7 +32,6 @@ const SCENARIOS: Scenario[] = [
   {
     id: "distillation",
     buttonLabel: "示例② 蒸馏步骤",
-    expectedTopCase: "预期最相关：CASE-007 / CASE-010 — 蒸馏单元操作传热限制导致热降解杂质",
     input: {
       product: "API-D（占位名称）",
       synthesisRoute: "末端：减压蒸馏 / 溶剂置换步骤",
@@ -50,7 +47,6 @@ const SCENARIOS: Scenario[] = [
   {
     id: "hydrogenation",
     buttonLabel: "示例③ 加氢步骤",
-    expectedTopCase: "预期最相关：CASE-008 — 原料硫杂质导致催化剂中毒（非搅拌/传质问题）",
     input: {
       product: "API-H（占位名称）",
       synthesisRoute: "催化加氢还原步骤",
@@ -66,7 +62,6 @@ const SCENARIOS: Scenario[] = [
   {
     id: "chlorination",
     buttonLabel: "示例④ 酰氯化步骤（不同药物类别）",
-    expectedTopCase: "预期最相关：CASE-009 — 心血管类原料药，验证架构跨药物类别的通用性",
     input: {
       product: "API-C（心血管类原料药，占位名称）",
       synthesisRoute: "酰氯化步骤（SOCl2体系）",
@@ -81,9 +76,7 @@ const SCENARIOS: Scenario[] = [
   },
   {
     id: "misdiagnosis",
-    buttonLabel: "示例⑤ 疑难案例：杂质误判（体现推理而非关键词匹配）",
-    expectedTopCase:
-      "预期最相关：CASE-010 与 CASE-001 — 二者HPLC杂质峰特征相近，但根因不同；Copilot需要区分二者，而非仅按关键词判定为同一问题",
+    buttonLabel: "示例⑤ 疑难案例：杂质误判",
     input: {
       product: "API-X（抗病毒原料药，占位名称）",
       synthesisRoute: "第3步：氟化反应之后的共沸脱水/蒸馏步骤",
@@ -100,9 +93,9 @@ const SCENARIOS: Scenario[] = [
 
 const STAGES: Stage[] = ["Lab", "Pilot", "Commercial"];
 const STAGE_LABELS: Record<Stage, string> = {
-  Lab: "小试（Lab）",
-  Pilot: "中试（Pilot）",
-  Commercial: "商业化（Commercial）",
+  Lab: "小试 Lab",
+  Pilot: "中试 Pilot",
+  Commercial: "商业化 Commercial",
 };
 
 export default function InvestigationPage() {
@@ -142,23 +135,16 @@ export default function InvestigationPage() {
     router.push("/evidence");
   }
 
-  const currentExpectation = SCENARIOS.find(
-    (s) => s.id === activeScenario
-  )?.expectedTopCase;
-
   return (
     <PageShell
       eyebrow="第 1 步 / 共 6 步"
-      title="新建放大调查（New Scale-up Investigation）"
-      description="结构化录入放大场景，Copilot将据此检索相关历史案例。这是一个专业调查工具，不是通用AI聊天框。"
+      title="新建放大调查"
+      description="录入放大场景，系统将据此检索相关历史案例。"
     >
       <div className="mb-5 rounded-lg border border-sky-100 bg-sky-50 p-4 text-sm text-slate-700">
-        <p className="font-medium text-slate-800">
-          如何使用这个页面（How to use this page）
-        </p>
+        <p className="font-medium text-slate-800">快速体验</p>
         <p className="mt-1 text-xs leading-relaxed text-slate-600">
-          点击下方任一示例按钮，可一键加载不同的放大场景，体验Copilot针对不同工序类型（氟化、蒸馏、加氢、氯化）检索并推荐相关历史案例的能力——不需要具备化学工程背景即可操作。
-          若想自行填写，建议在下方&ldquo;疑似相关工序&rdquo;中勾选对应标签，Copilot会据此更准确地匹配历史案例。
+          点击下方示例按钮，可一键加载不同的放大场景，体验系统针对不同工序类型的案例检索能力。也可自行填写，勾选下方工序类型标签以获得更精准的匹配。
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {SCENARIOS.map((s) => (
@@ -176,9 +162,6 @@ export default function InvestigationPage() {
             </button>
           ))}
         </div>
-        {currentExpectation && (
-          <p className="mt-2 text-xs text-sky-700">{currentExpectation}</p>
-        )}
       </div>
 
       <form
@@ -186,7 +169,7 @@ export default function InvestigationPage() {
         className="rounded-lg border border-slate-200 bg-white p-6"
       >
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="产品 / 原料药名称（Product / API）" required>
+          <Field label="产品 / API名称" required>
             <input
               className="input"
               value={form.product}
@@ -195,7 +178,7 @@ export default function InvestigationPage() {
             />
           </Field>
 
-          <Field label="当前阶段（Current Stage）" required>
+          <Field label="当前阶段" required>
             <select
               className="input"
               value={form.currentStage}
@@ -210,7 +193,7 @@ export default function InvestigationPage() {
           </Field>
 
           <Field
-            label="疑似相关工序（Suspected Process Step）"
+            label="疑似相关工序"
             full
             hint='填写你怀疑出问题的具体工序即可，不需要完整合成路线。如"第3步：氟化反应"'
           >
@@ -223,7 +206,7 @@ export default function InvestigationPage() {
           </Field>
 
           <Field
-            label="工序类型标签（可多选，帮助Copilot精确匹配）"
+            label="工序类型标签（可多选）"
             full
           >
             <div className="flex flex-wrap gap-2">
@@ -249,7 +232,7 @@ export default function InvestigationPage() {
             </div>
           </Field>
 
-          <Field label="放大规模（Scale）" required>
+          <Field label="放大规模" required>
             <input
               className="input"
               value={form.scale}
@@ -259,7 +242,7 @@ export default function InvestigationPage() {
             />
           </Field>
 
-          <Field label="目标收率（Target Yield）" required>
+          <Field label="目标收率" required>
             <input
               className="input"
               value={form.targetYield}
@@ -268,7 +251,7 @@ export default function InvestigationPage() {
             />
           </Field>
 
-          <Field label="设备类型及变更（Equipment）" full>
+          <Field label="设备类型及变更" full>
             <input
               className="input"
               value={form.equipment}
@@ -277,7 +260,7 @@ export default function InvestigationPage() {
           </Field>
 
           <Field
-            label="问题描述（Problem Description）"
+            label="问题描述"
             full
             required
             hint="尽量包含具体现象，如收率变化、杂质类型、耗时变化等——这些关键词也会被用于检索匹配"
@@ -291,10 +274,7 @@ export default function InvestigationPage() {
           </Field>
         </div>
 
-        <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-5">
-          <p className="text-xs text-slate-400">
-            示例数据均为虚构（Illustrative Case），非真实企业数据
-          </p>
+        <div className="mt-6 flex items-center justify-end border-t border-slate-100 pt-5">
           <button
             type="submit"
             disabled={submitting}

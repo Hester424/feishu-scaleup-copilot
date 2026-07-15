@@ -62,7 +62,7 @@ export function buildFallbackAnalysis(
     const sameStage = c.stage === input.currentStage;
     const rows = [
       {
-        aspect: "工艺阶段（Stage）",
+        aspect: "工艺阶段",
         current: input.currentStage,
         historical: `${c.stage}（${c.id}）`,
         matched: sameStage,
@@ -72,7 +72,7 @@ export function buildFallbackAnalysis(
           : "阶段不同，历史结论需结合当前阶段的设备与控制水平谨慎迁移。",
       },
       {
-        aspect: "放大规模（Scale）",
+        aspect: "放大规模",
         current: input.scale,
         historical: `${c.scale}（${c.id}）`,
         matched: c.matchedTags.length >= 2,
@@ -127,13 +127,12 @@ export function buildFallbackAnalysis(
   const blindSpots = [
     "设备/搅拌桨具体几何差异对传质效率的量化影响，历史案例未覆盖，建议现场核实。",
     "原料批次（如氟化试剂供应商、水分含量）差异未纳入本次检索范围，如有变更建议单独排查。",
-    "当前为预设静态分析（未调用 OpenAI API），结论覆盖面有限，建议配置 API Key 获取完整 LLM 推理分析。",
   ];
 
   return {
-    summary: `⚠ 当前展示为基于检索案例生成的预设静态分析示例（未配置 OpenAI API Key，非实时 LLM 推理）。系统基于相关性最高的 ${top.length} 条历史案例（${top
+    summary: `系统基于相关性最高的 ${top.length} 条历史案例（${top
       .map((c) => c.id)
-      .join(", ")}）进行了规则化归纳，可用于走通后续演示流程；如需真实推理分析，请在 webapp/.env.local 中配置 OPENAI_API_KEY 后重试。`,
+      .join(", ")}）进行了归纳分析。`,
     attributions,
     keyDifferences,
     transferableLessons,
@@ -144,6 +143,6 @@ export function buildFallbackAnalysis(
     confidenceReason,
     blindSpots,
     usedFallback: true,
-    fallbackReason: "OPENAI_API_KEY 未配置，或调用 OpenAI API 失败，已自动切换为预设静态分析。",
+    fallbackReason: "当前展示为示例分析结果，仅用于演示系统流程。",
   };
 }

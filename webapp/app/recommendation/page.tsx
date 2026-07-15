@@ -44,13 +44,13 @@ export default function RecommendationPage() {
   return (
     <PageShell
       eyebrow="第 4 步 / 共 6 步"
-      title="参数推荐（Parameter Recommendation）"
-      description="当前展示的是本次检索到的历史案例中，实际记录的工艺参数——逐条可追溯到具体案例，不做跨案例的数值预测。"
+      title="历史工艺参数"
+      description="本次检索案例中实际记录的工艺参数，逐条可追溯至具体案例。"
     >
       <div className="rounded-lg border border-slate-200 bg-white p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-slate-900">
-            检索案例中的实际工艺参数记录（Evidence Parameter Extract）
+            检索案例工艺参数记录
           </h2>
           <span className="text-xs text-slate-400">
             来自本次 {retrievedCases.length} 条检索案例，按相关性排序
@@ -93,8 +93,8 @@ export default function RecommendationPage() {
         )}
 
         <p className="mt-4 text-xs text-slate-400">
-          以上为逐案例的原始记录，供工程师横向比对参考——不同案例使用的参数字段并不完全一致（如反应温度在不同案例中可能记为
-          reaction_temp / initial_temp_setpoint 等），因此不做跨案例的自动数值汇总，避免制造虚假的可比性。
+          以上为逐案例的原始记录，供工程师横向比对参考。不同案例使用的参数字段命名可能不同（如反应温度在不同案例中可能记为
+          reaction_temp / initial_temp_setpoint 等），系统按案例原样展示，保留数据的真实边界。
         </p>
       </div>
 
@@ -104,14 +104,11 @@ export default function RecommendationPage() {
             产品演进方向：机器学习驱动的参数区间预测
           </p>
           <span className="shrink-0 rounded-full border border-slate-300 bg-white px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-slate-500">
-            🔒 Coming Soon
+            规划能力
           </span>
         </div>
         <p className="mt-2 text-sm text-slate-600">
-          当知识库积累到足够数量、且关键参数字段完成标准化（统一命名、单位、记录口径）后，系统可基于历史数据训练模型，
-          自动生成参数推荐区间及置信度——而不仅是像当前这样列出原始记录供人工比对。当前示例知识库规模有限、参数字段尚未标准化，
-          不足以支撑可靠的区间估计。与其展示一个看似精确、实则缺乏统计基础的预测结果，Copilot选择明确展示原始证据、暴露这一局限
-          （Explainability &amp; Auditability by Design 的一部分），把&ldquo;预测&rdquo;作为清晰标注的未来路径，而不是现在就冒充已经具备的能力。
+          当知识库积累足够数量且参数字段完成标准化后，系统可基于历史数据训练模型，自动生成参数推荐区间及置信度。
         </p>
       </div>
 

@@ -20,8 +20,8 @@ export default function EvidencePage() {
   return (
     <PageShell
       eyebrow="第 2 步 / 共 6 步"
-      title="证据收集（Evidence Collection）"
-      description="Copilot从历史知识库中检索到以下案例——AI在找证据，不是在猜答案。相关性评分与匹配依据均可见。"
+      title="证据收集"
+      description="从历史知识库中检索到以下相关案例，相关性评分与匹配依据均可见。"
     >
       <div className="mb-5 rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-600">
         <span className="font-medium text-slate-900">当前调查场景：</span>{" "}
@@ -40,14 +40,17 @@ export default function EvidencePage() {
                 <DocTypeTag docType={c.docType} />
                 {c.isUserAdded && (
                   <span className="rounded-full border border-sky-300 bg-sky-50 px-2 py-0.5 text-[11px] font-medium text-sky-700">
-                    本轮新增（Added this session）
+                    本轮新增
                   </span>
                 )}
                 <span className="text-xs text-slate-400">
                   {c.stage} · {c.scale}
                 </span>
               </div>
-              <RelevanceBar score={c.relevanceScore} />
+              <div className="flex items-center gap-2">
+                <StarRating score={c.relevanceScore} />
+                <RelevanceBar score={c.relevanceScore} />
+              </div>
             </div>
 
             <p className="mt-3 text-sm font-medium text-slate-900">
@@ -63,26 +66,27 @@ export default function EvidencePage() {
               </div>
             )}
 
-            <div className="mt-3 rounded-md bg-slate-50 p-3 text-xs text-slate-600">
-              <span className="font-medium text-slate-700">相关性解释：</span>{" "}
-              {c.relevanceExplanation}
+            <div className="mt-3 rounded-md border border-sky-100 bg-sky-50/50 p-3 text-xs">
+              <span className="font-medium text-sky-800">匹配依据：</span>{" "}
+              <span className="text-slate-600">{c.relevanceExplanation}</span>
               {c.matchedTags.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
+                <ul className="mt-2 grid gap-1 sm:grid-cols-2">
                   {c.matchedTags.map((t) => (
-                    <span
+                    <li
                       key={t}
-                      className="rounded-full bg-white px-2 py-0.5 text-[11px] text-slate-500 ring-1 ring-slate-200"
+                      className="flex items-center gap-1.5 text-slate-600"
                     >
-                      {t}
-                    </span>
+                      <span className="text-emerald-600">✓</span>
+                      {humanizeTag(t)}
+                    </li>
                   ))}
-                </div>
+                </ul>
               )}
             </div>
 
             <details className="mt-3 text-sm">
               <summary className="cursor-pointer text-slate-500 hover:text-slate-700">
-                查看关键工艺参数与处理结果
+                查看案例详情
               </summary>
               <div className="mt-2 grid gap-3 sm:grid-cols-2">
                 <div>
@@ -126,6 +130,22 @@ export default function EvidencePage() {
       </div>
     </PageShell>
   );
+}
+
+function StarRating({ score }: { score: number }) {
+  const filled = Math.min(5, Math.max(0, Math.round(score / 20)));
+  return (
+    <span className="text-xs text-amber-500" aria-hidden>
+      {"★".repeat(filled)}
+      <span className="text-slate-200">{"★".repeat(5 - filled)}</span>
+    </span>
+  );
+}
+
+function humanizeTag(tag: string): string {
+  return tag
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function RelevanceBar({ score }: { score: number }) {
