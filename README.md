@@ -5,7 +5,7 @@
 > 把传统需要 2-3 天的工艺放大调查，压缩到 30 分钟。
 
 飞书 AI 人才大赛 · 海正药业命题  
-队名：放大Pai ｜ 队员：谢诗意、朱成元
+队名：放大pAI ｜ 队员：谢诗意、朱成元
 
 ---
 
@@ -17,9 +17,7 @@
 
 ## 🎬 演示视频
 
-https://github.com/user-attachments/assets/YOUR_VIDEO_ID
-
-> ⬆️ 上传视频后替换此链接，具体步骤见下方说明。
+**👉 [下载/观看演示视频](https://github.com/Hester424/feishu-scaleup-copilot/releases/download/demo/demo_v1.mp4)**（约 508MB，MP4）
 
 ---
 
@@ -117,4 +115,4 @@ cp .env.local.example .env.local
 
 ---
 
-**放大Pai** · 谢诗意 & 朱成元 · 2026 年 7 月
+**放大pAI** · 谢诗意 & 朱成元 · 2026 年 7 月
