@@ -50,19 +50,21 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
 
   const addCase = useCallback(
     (draft: Omit<HistoricalCase, "id" | "isUserAdded" | "addedAt">) => {
-      let created!: HistoricalCase;
-      setCases((prev) => {
-        created = {
-          ...draft,
-          id: nextCaseId(prev),
-          isUserAdded: true,
-          addedAt: new Date().toISOString(),
-        };
-        return [...prev, created];
-      });
+      // Computed directly from the current `cases` closure, not from inside
+      // the setCases updater — React doesn't guarantee a functional updater
+      // runs synchronously before this function returns, so assigning to an
+      // outer variable from inside one (as a previous version of this code
+      // did) can return a stale/undefined value to the caller.
+      const created: HistoricalCase = {
+        ...draft,
+        id: nextCaseId(cases),
+        isUserAdded: true,
+        addedAt: new Date().toISOString(),
+      };
+      setCases((prev) => [...prev, created]);
       return created;
     },
-    []
+    [cases]
   );
 
   const value = useMemo<InvestigationState>(
