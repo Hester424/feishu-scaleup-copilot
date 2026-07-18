@@ -104,13 +104,11 @@ cp .env.local.example .env.local
 
 ```
 ├── README.md                         ← 你在这里
-├── webapp/                           ← Next.js 应用
-│   ├── app/                          ← 页面路由
-│   ├── components/                   ← UI 组件
-│   ├── lib/                          ← 知识库 & 业务逻辑
-│   └── README.md                     ← 技术文档
-├── demo_brief_for_claude_code.md     ← Demo 开发 Brief
-└── 开题方案内容清单_终版.md              ← 产品方案文档
+└── webapp/                           ← Next.js 应用
+    ├── app/                          ← 页面路由
+    ├── components/                   ← UI 组件
+    ├── lib/                          ← 知识库 & 业务逻辑
+    └── README.md                     ← 技术文档
 ```
 
 ---
